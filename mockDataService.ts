@@ -17,109 +17,30 @@ export interface MockTask {
     url: string;
 }
 
-class MockDataService {
-    // Pool of all available mock tasks
-    private taskPool: MockTask[] = [];
-    // Map of handler ID to their assigned tasks
-    private assignedTasks: Map<string, MockTask[]> = new Map();
-    private nextTaskId: number = 1;
+// Pool of all available mock tasks
+let taskPool: MockTask[] = [];
+// Map of handler ID to their assigned tasks
+let assignedTasks: Map<string, MockTask[]> = new Map();
+let nextTaskId: number = 1;
 
-    constructor() {
-        this.initializeTaskPool();
-    }
-
-    private initializeTaskPool(): void {
-        // Create 20 mock tasks with varying IDs and dates
-        const baseDate = new Date('2026-01-23');
-        const defaultHandlerId = '469ddd20-6796-4e05-9e18-6a95953f6cb3';
+function initializeTaskPool(): void {
+    // Create 20 mock tasks with varying IDs and dates
+    const baseDate = new Date('2026-01-23');
+    const defaultHandlerId = '469ddd20-6796-4e05-9e18-6a95953f6cb3';
+    
+    for (let i = 1; i <= 20; i++) {
+        const taskId = String(i).padStart(3, '0');
+        const kundbehovsflodeId = String(i).padStart(3, '0');
+        const planerad = new Date(baseDate);
+        planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1); // 1-14 days ahead
         
-        for (let i = 1; i <= 20; i++) {
-            const taskId = String(i).padStart(3, '0');
-            const kundbehovsflodeId = String(i).padStart(3, '0');
-            const planerad = new Date(baseDate);
-            planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1); // 1-14 days ahead
-            
-            // Pre-assign first 5 tasks to the default handler, rest remain unassigned
-            const handlaggarId = i <= 5 ? defaultHandlerId : null;
-            
-            const task: MockTask = {
-                uppgift_id: taskId,
-                kundbehovsflode_id: kundbehovsflodeId,
-                skapad: "2026-01-15T08:00:00Z",
-                status: "Pågående",
-                handlaggar_id: handlaggarId,
-                planerad_till: planerad.toISOString(),
-                utford: null,
-                kundbehov: "Vård av husdjur",
-                regel: "rtf-manuell",
-                beskrivning: "Manuell kontroll RTF",
-                verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
-                roll: "Handläggare",
-                url: "http://localhost:3031/vardAvHusdjur.js"
-            };
-            
-            this.taskPool.push(task);
-            
-            // Add pre-assigned tasks to the assignedTasks map
-            if (handlaggarId) {
-                if (!this.assignedTasks.has(handlaggarId)) {
-                    this.assignedTasks.set(handlaggarId, []);
-                }
-                this.assignedTasks.get(handlaggarId)!.push(task);
-            }
-        }
+        // Pre-assign first 5 tasks to the default handler, rest remain unassigned
+        const handlaggarId = i <= 5 ? defaultHandlerId : null;
         
-        this.nextTaskId = 21; // Next available ID after the initial 20
-    }
-
-    /**
-     * Get all tasks assigned to a specific handler
-     */
-    getAssignedTasks(handlaggarId: string): MockTask[] {
-        if (!this.assignedTasks.has(handlaggarId)) {
-            this.assignedTasks.set(handlaggarId, []);
-        }
-        return this.assignedTasks.get(handlaggarId)!;
-    }
-
-    /**
-     * Assign a new task to a handler (simulates POST to assign task)
-     * Returns the newly assigned task or null if no tasks available
-     */
-    assignTaskToHandler(handlaggarId: string): MockTask | null {
-        // Find an unassigned task from the pool
-        const availableTask = this.taskPool.find(task => task.handlaggar_id === null);
-        
-        if (!availableTask) {
-            // If no tasks in pool, create a new one
-            return this.createAndAssignNewTask(handlaggarId);
-        }
-
-        // Assign the task to the handler
-        availableTask.handlaggar_id = handlaggarId;
-        
-        // Add to assigned tasks list
-        if (!this.assignedTasks.has(handlaggarId)) {
-            this.assignedTasks.set(handlaggarId, []);
-        }
-        this.assignedTasks.get(handlaggarId)!.push(availableTask);
-        
-        return availableTask;
-    }
-
-    /**
-     * Create a new task and assign it to a handler
-     */
-    private createAndAssignNewTask(handlaggarId: string): MockTask {
-        const taskId = String(this.nextTaskId).padStart(3, '0');
-        const kundbehovsflodeId = String(this.nextTaskId).padStart(3, '0');
-        const planerad = new Date();
-        planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
-        
-        const newTask: MockTask = {
+        const task: MockTask = {
             uppgift_id: taskId,
             kundbehovsflode_id: kundbehovsflodeId,
-            skapad: new Date().toISOString(),
+            skapad: "2026-01-15T08:00:00Z",
             status: "Pågående",
             handlaggar_id: handlaggarId,
             planerad_till: planerad.toISOString(),
@@ -132,83 +53,156 @@ class MockDataService {
             url: "http://localhost:3031/vardAvHusdjur.js"
         };
         
-        this.nextTaskId++;
-        this.taskPool.push(newTask);
+        taskPool.push(task);
         
-        if (!this.assignedTasks.has(handlaggarId)) {
-            this.assignedTasks.set(handlaggarId, []);
+        // Add pre-assigned tasks to the assignedTasks map
+        if (handlaggarId) {
+            if (!assignedTasks.has(handlaggarId)) {
+                assignedTasks.set(handlaggarId, []);
+            }
+            assignedTasks.get(handlaggarId)!.push(task);
         }
-        this.assignedTasks.get(handlaggarId)!.push(newTask);
-        
-        return newTask;
     }
-
-    /**
-     * Remove a task from a handler's assigned tasks (simulates task completion/closure)
-     */
-    removeTaskFromHandler(handlaggarId: string, uppgiftId: string): boolean {
-        if (!this.assignedTasks.has(handlaggarId)) {
-            return false;
-        }
-        
-        const tasks = this.assignedTasks.get(handlaggarId)!;
-        const taskIndex = tasks.findIndex(task => task.uppgift_id === uppgiftId);
-        
-        if (taskIndex === -1) {
-            return false;
-        }
-        
-        // Remove from assigned tasks
-        const [removedTask] = tasks.splice(taskIndex, 1);
-        
-        // Mark task as unassigned in the pool
-        const poolTask = this.taskPool.find(task => task.uppgift_id === uppgiftId);
-        if (poolTask) {
-            poolTask.handlaggar_id = null;
-            poolTask.status = "Avslutad";
-            poolTask.utford = new Date().toISOString();
-        }
-        
-        return true;
-    }
-
-    /**
-     * Get all tasks in the pool (for debugging/management)
-     */
-    getAllTasks(): MockTask[] {
-        return this.taskPool;
-    }
-
-    /**
-     * Reset the service to initial state
-     */
-    reset(): void {
-        this.taskPool = [];
-        this.assignedTasks.clear();
-        this.nextTaskId = 1;
-        this.initializeTaskPool();
-    }
-
-    /**
-     * Get statistics about the current state
-     */
-    getStats() {
-        const totalTasks = this.taskPool.length;
-        const assignedCount = this.taskPool.filter(task => task.handlaggar_id !== null).length;
-        const unassignedCount = totalTasks - assignedCount;
-        
-        return {
-            totalTasks,
-            assignedCount,
-            unassignedCount,
-            handlers: this.assignedTasks.size,
-            handlerDetails: Array.from(this.assignedTasks.entries()).map(([id, tasks]) => ({
-                handlaggarId: id,
-                taskCount: tasks.length
-            }))
-        };
-    }
+    
+    nextTaskId = 21; // Next available ID after the initial 20
 }
 
-// Export a singleton instance
-export const mockDataService = new MockDataService();
+/**
+ * Get all tasks assigned to a specific handler
+ */
+export function getAssignedTasks(handlaggarId: string): MockTask[] {
+    if (!assignedTasks.has(handlaggarId)) {
+        assignedTasks.set(handlaggarId, []);
+    }
+    return assignedTasks.get(handlaggarId)!;
+}
+
+/**
+ * Assign a new task to a handler (simulates POST to assign task)
+ * Returns the newly assigned task or null if no tasks available
+ */
+export function assignTaskToHandler(handlaggarId: string): MockTask | null {
+    // Find an unassigned task from the pool
+    const availableTask = taskPool.find(task => task.handlaggar_id === null);
+    
+    if (!availableTask) {
+        // If no tasks in pool, create a new one
+        return createAndAssignNewTask(handlaggarId);
+    }
+
+    // Assign the task to the handler
+    availableTask.handlaggar_id = handlaggarId;
+    
+    // Add to assigned tasks list
+    if (!assignedTasks.has(handlaggarId)) {
+        assignedTasks.set(handlaggarId, []);
+    }
+    assignedTasks.get(handlaggarId)!.push(availableTask);
+    
+    return availableTask;
+}
+
+/**
+ * Create a new task and assign it to a handler
+ */
+function createAndAssignNewTask(handlaggarId: string): MockTask {
+    const taskId = String(nextTaskId).padStart(3, '0');
+    const kundbehovsflodeId = String(nextTaskId).padStart(3, '0');
+    const planerad = new Date();
+    planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
+    
+    const newTask: MockTask = {
+        uppgift_id: taskId,
+        kundbehovsflode_id: kundbehovsflodeId,
+        skapad: new Date().toISOString(),
+        status: "Pågående",
+        handlaggar_id: handlaggarId,
+        planerad_till: planerad.toISOString(),
+        utford: null,
+        kundbehov: "Vård av husdjur",
+        regel: "rtf-manuell",
+        beskrivning: "Manuell kontroll RTF",
+        verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+        roll: "Handläggare",
+        url: "http://localhost:3031/vardAvHusdjur.js"
+    };
+    
+    nextTaskId++;
+    taskPool.push(newTask);
+    
+    if (!assignedTasks.has(handlaggarId)) {
+        assignedTasks.set(handlaggarId, []);
+    }
+    assignedTasks.get(handlaggarId)!.push(newTask);
+    
+    return newTask;
+}
+
+/**
+ * Remove a task from a handler's assigned tasks (simulates task completion/closure)
+ */
+export function removeTaskFromHandler(handlaggarId: string, uppgiftId: string): boolean {
+    if (!assignedTasks.has(handlaggarId)) {
+        return false;
+    }
+    
+    const tasks = assignedTasks.get(handlaggarId)!;
+    const taskIndex = tasks.findIndex(task => task.uppgift_id === uppgiftId);
+    
+    if (taskIndex === -1) {
+        return false;
+    }
+    
+    // Remove from assigned tasks
+    const [removedTask] = tasks.splice(taskIndex, 1);
+    
+    // Mark task as unassigned in the pool
+    const poolTask = taskPool.find(task => task.uppgift_id === uppgiftId);
+    if (poolTask) {
+        poolTask.handlaggar_id = null;
+        poolTask.status = "Avslutad";
+        poolTask.utford = new Date().toISOString();
+    }
+    
+    return true;
+}
+
+/**
+ * Get all tasks in the pool (for debugging/management)
+ */
+export function getAllTasks(): MockTask[] {
+    return taskPool;
+}
+
+/**
+ * Reset the service to initial state
+ */
+export function reset(): void {
+    taskPool = [];
+    assignedTasks.clear();
+    nextTaskId = 1;
+    initializeTaskPool();
+}
+
+/**
+ * Get statistics about the current state
+ */
+export function getStats() {
+    const totalTasks = taskPool.length;
+    const assignedCount = taskPool.filter(task => task.handlaggar_id !== null).length;
+    const unassignedCount = totalTasks - assignedCount;
+    
+    return {
+        totalTasks,
+        assignedCount,
+        unassignedCount,
+        handlers: assignedTasks.size,
+        handlerDetails: Array.from(assignedTasks.entries()).map(([id, tasks]) => ({
+            handlaggarId: id,
+            taskCount: tasks.length
+        }))
+    };
+}
+
+// Initialize on module load
+initializeTaskPool();
