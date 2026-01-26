@@ -1,0 +1,242 @@
+{
+  "endpoints": {
+    "GET /uppgifter/handlaggare/:handlaggarId": {
+      "description": "Get all assigned tasks for a handler",
+      "response": {
+        "operativa_uppgifter": [
+          {
+            "uppgift_id": "001",
+            "kundbehovsflode_id": "001",
+            "skapad": "2026-01-15T08:00:00Z",
+            "status": "Pågående",
+            "handlaggar_id": "469ddd20-6796-4e05-9e18-6a95953f6cb3",
+            "planerad_till": "2026-01-25T17:00:00Z",
+            "utford": null,
+            "kundbehov": "Vård av husdjur",
+            "regel": "rtf-manuell",
+            "beskrivning": "Manuell kontroll RTF",
+            "verksamhetslogik": "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+            "roll": "Handläggare",
+            "url": "http://localhost:3031/vardAvHusdjur.js"
+          },
+          {
+            "uppgift_id": "002",
+            "kundbehovsflode_id": "002",
+            "skapad": "2026-01-16T09:30:00Z",
+            "status": "Redo",
+            "handlaggar_id": "469ddd20-6796-4e05-9e18-6a95953f6cb3",
+            "planerad_till": "2026-01-26T17:00:00Z",
+            "utford": null,
+            "kundbehov": "Vård av husdjur",
+            "regel": "rtf-manuell",
+            "beskrivning": "Manuell kontroll RTF",
+            "verksamhetslogik": "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+            "roll": "Handläggare",
+            "url": "http://localhost:3031/vardAvHusdjur.js"
+          },
+          {
+            "uppgift_id": "003",
+            "kundbehovsflode_id": "003",
+            "skapad": "2026-01-17T10:15:00Z",
+            "status": "Pågående",
+            "handlaggar_id": "469ddd20-6796-4e05-9e18-6a95953f6cb3",
+            "planerad_till": "2026-01-27T17:00:00Z",
+            "utford": null,
+            "kundbehov": "Vård av husdjur",
+            "regel": "rtf-manuell",
+            "beskrivning": "Manuell kontroll RTF",
+            "verksamhetslogik": "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+            "roll": "Handläggare",
+            "url": "http://localhost:3031/vardAvHusdjur.js"
+          }
+        ]
+      }
+    },
+    "POST /uppgifter/handlaggare/:handlaggarId": {
+      "description": "Get next task for a handler",
+      "response": {
+        "uppgift": {
+          "uppgift_id": "004",
+          "kundbehovsflode_id": "004",
+          "skapad": "2026-01-18T11:00:00Z",
+          "status": "Redo",
+          "handlaggar_id": "469ddd20-6796-4e05-9e18-6a95953f6cb3",
+          "planerad_till": "2026-01-28T17:00:00Z",
+          "utford": null,
+          "kundbehov": "Vård av husdjur",
+          "regel": "rtf-manuell",
+          "beskrivning": "Manuell kontroll RTF",
+          "verksamhetslogik": "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+          "roll": "Handläggare",
+          "url": "http://localhost:3031/vardAvHusdjur.js",
+          "id": "004",
+          "typ": "Manuell kontroll RTF"
+        }
+      }
+    },
+    "GET /items": {
+      "description": "List all items (uppgifter)",
+      "response": [
+        {
+          "fornamn": "Anna",
+          "efternamn": "Lindberg",
+          "personnummer": 198503122345,
+          "anstalld": true,
+          "harHund": false,
+          "kundbehovsflodeId": 1001,
+          "uppgiftsTyp": "Manuell kontroll RTF",
+          "uppgiftsStatus": "Pågående",
+          "adress": {
+            "gata": "Björkgatan",
+            "nummer": "12A",
+            "postnummer": "123 45",
+            "lägenhetsnummer": "1101",
+            "stad": "Stockholm",
+            "folkbokförd": true
+          },
+          "arbetsgivare": {
+            "id": 21,
+            "namn": "Stockholm Konsult AB",
+            "adress": "Hamngatan 4, 11147 Stockholm",
+            "kontaktperson": "Mikael Rosén",
+            "telefon": "08-1112233"
+          }
+        },
+        {
+          "fornamn": "Johan",
+          "efternamn": "Svensson",
+          "personnummer": 199207053211,
+          "anstalld": false,
+          "harHund": true,
+          "kundbehovsflodeId": 1002,
+          "uppgiftsTyp": "Manuell kontroll RTF",
+          "uppgiftsStatus": "Redo",
+          "adress": {
+            "gata": "Tallgatan",
+            "nummer": "7",
+            "postnummer": "345 66",
+            "lägenhetsnummer": "0204",
+            "stad": "Örebro",
+            "folkbokförd": false
+          },
+          "arbetsgivare": {
+            "id": 3,
+            "namn": "Tech Solutions",
+            "adress": "Teknikgatan 10, 67890 Techstad",
+            "kontaktperson": "Cecilia Carlsson",
+            "telefon": "011-2233445"
+          }
+        }
+      ]
+    },
+    "GET /items/:id": {
+      "description": "Get a specific item by ID",
+      "response": {
+        "fornamn": "Anna",
+        "efternamn": "Lindberg",
+        "personnummer": 198503122345,
+        "anstalld": true,
+        "harHund": false,
+        "kundbehovsflodeId": 1001,
+        "uppgiftsTyp": "Manuell kontroll RTF",
+        "uppgiftsStatus": "Pågående",
+        "adress": {
+          "gata": "Björkgatan",
+          "nummer": "12A",
+          "postnummer": "123 45",
+          "lägenhetsnummer": "1101",
+          "stad": "Stockholm",
+          "folkbokförd": true
+        },
+        "arbetsgivare": {
+          "id": 21,
+          "namn": "Stockholm Konsult AB",
+          "adress": "Hamngatan 4, 11147 Stockholm",
+          "kontaktperson": "Mikael Rosén",
+          "telefon": "08-1112233"
+        }
+      },
+      "not_found_response": null
+    },
+    "GET /api/alternatives": {
+      "description": "Get alternatives/options list (via @forsakringskassan/template-api)",
+      "response": {
+        "alternatives": [
+          {
+            "id": 1,
+            "name": "Alternativ 1"
+          },
+          {
+            "id": 2,
+            "name": "Alternativ 2"
+          },
+          {
+            "id": 3,
+            "name": "Alternativ 3"
+          },
+          {
+            "id": 4,
+            "name": "Alternativ 4"
+          },
+          {
+            "id": 5,
+            "name": "Alternativ 5"
+          },
+          {
+            "id": 6,
+            "name": "Alternativ 6"
+          }
+        ]
+      }
+    },
+    "POST /kundbehov": {
+      "description": "Create a new kundbehov",
+      "request": {
+        "persnr": "19900101-9999",
+        "formanstyp": "VAH",
+        "period": {
+          "start": 1766530800,
+          "slut": 1766703600
+        }
+      },
+      "response": {
+        "kundbehov": {
+          "id": "kb-001",
+          "persnr": "19900101-9999",
+          "formanstyp": "VAH",
+          "period": {
+            "start": 1766530800,
+            "slut": 1766703600
+          },
+          "skapad": "2026-01-23T10:00:00Z"
+        }
+      }
+    },
+    "POST /kundbehovsflode": {
+      "description": "Create a new kundbehovsflode",
+      "request": {
+        "kundbehovId": "kb-001"
+      },
+      "response": {
+        "kundbehovsflode": {
+          "id": "kbf-001",
+          "kundbehovId": "kb-001",
+          "skapad": "2026-01-23T10:00:05Z",
+          "status": "active"
+        }
+      }
+    }
+  },
+  "notes": {
+    "data_transformation": "The frontend transforms snake_case fields from the API (uppgift_id, kundbehovsflode_id, etc.) to camelCase (uppgiftId, kundbehovsflodeId, etc.) using the transformUppgift utility",
+    "mock_data_sources": [
+      "src/assets/uppgifter.json - Contains detailed mock data for items/uppgifter",
+      "src/assets/uppgiftLista.json - Contains simplified list of uppgifter"
+    ],
+    "environment_config": {
+      "VITE_KUNDBEHOV_API_URL": "http://localhost:8888",
+      "VITE_UPPGIFTER_API_URL": "http://localhost:8889",
+      "VITE_MOCK_HANDLAGGARE_ID": "469ddd20-6796-4e05-9e18-6a95953f6cb3"
+    }
+  }
+}
