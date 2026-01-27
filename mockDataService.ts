@@ -17,29 +17,49 @@ export interface MockTask {
     url: string;
 }
 
-// Pool of all available mock tasks
 let taskPool: MockTask[] = [];
-// Map of handler ID to their assigned tasks
 let assignedTasks: Map<string, MockTask[]> = new Map();
 let nextTaskId: number = 1;
 
+// Fixed IDs for consistent mapping across micro-frontends fallback data
+const FIXED_TASK_IDS = [
+    { uppgift_id: 'task-001', kundbehovsflode_id: 'flow-001' },
+    { uppgift_id: 'task-002', kundbehovsflode_id: 'flow-002' },
+    { uppgift_id: 'task-003', kundbehovsflode_id: 'flow-003' },
+    { uppgift_id: 'task-004', kundbehovsflode_id: 'flow-004' },
+    { uppgift_id: 'task-005', kundbehovsflode_id: 'flow-005' },
+    { uppgift_id: 'task-006', kundbehovsflode_id: 'flow-006' },
+    { uppgift_id: 'task-007', kundbehovsflode_id: 'flow-007' },
+    { uppgift_id: 'task-008', kundbehovsflode_id: 'flow-008' },
+    { uppgift_id: 'task-009', kundbehovsflode_id: 'flow-009' },
+    { uppgift_id: 'task-010', kundbehovsflode_id: 'flow-010' },
+    { uppgift_id: 'task-011', kundbehovsflode_id: 'flow-011' },
+    { uppgift_id: 'task-012', kundbehovsflode_id: 'flow-012' },
+    { uppgift_id: 'task-013', kundbehovsflode_id: 'flow-013' },
+    { uppgift_id: 'task-014', kundbehovsflode_id: 'flow-014' },
+    { uppgift_id: 'task-015', kundbehovsflode_id: 'flow-015' },
+    { uppgift_id: 'task-016', kundbehovsflode_id: 'flow-016' },
+    { uppgift_id: 'task-017', kundbehovsflode_id: 'flow-017' },
+    { uppgift_id: 'task-018', kundbehovsflode_id: 'flow-018' },
+    { uppgift_id: 'task-019', kundbehovsflode_id: 'flow-019' },
+    { uppgift_id: 'task-020', kundbehovsflode_id: 'flow-020' },
+];
+
 function initializeTaskPool(): void {
-    // Create 20 mock tasks with varying IDs and dates
+    // Create 20 mock tasks with fixed IDs for consistent mapping
     const baseDate = new Date('2026-01-23');
-    const defaultHandlerId = '469ddd20-6796-4e05-9e18-6a95953f6cb3';
     
-    for (let i = 1; i <= 20; i++) {
-        const taskId = String(i).padStart(3, '0');
-        const kundbehovsflodeId = String(i).padStart(3, '0');
+    for (let i = 0; i < FIXED_TASK_IDS.length; i++) {
+        const { uppgift_id, kundbehovsflode_id } = FIXED_TASK_IDS[i];
         const planerad = new Date(baseDate);
-        planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1); // 1-14 days ahead
+        planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
         
-        // Pre-assign first 5 tasks to the default handler, rest remain unassigned
-        const handlaggarId = i <= 5 ? defaultHandlerId : null;
+        // Pre-assign first 5 tasks to the default handler
+        const handlaggarId = i < 5 ? (process.env.DEFAULT_HANDLER_ID ?? null) : null;
         
         const task: MockTask = {
-            uppgift_id: taskId,
-            kundbehovsflode_id: kundbehovsflodeId,
+            uppgift_id,
+            kundbehovsflode_id,
             skapad: "2026-01-15T08:00:00Z",
             status: "Pågående",
             handlaggar_id: handlaggarId,
@@ -79,14 +99,12 @@ export function getAssignedTasks(handlaggarId: string): MockTask[] {
 
 /**
  * Assign a new task to a handler (simulates POST to assign task)
- * Returns the newly assigned task or null if no tasks available
+ * Returns the newly assigned task or creates and assigns a new one if none available
  */
 export function assignTaskToHandler(handlaggarId: string): MockTask | null {
-    // Find an unassigned task from the pool
     const availableTask = taskPool.find(task => task.handlaggar_id === null);
     
     if (!availableTask) {
-        // If no tasks in pool, create a new one
         return createAndAssignNewTask(handlaggarId);
     }
 
@@ -106,8 +124,8 @@ export function assignTaskToHandler(handlaggarId: string): MockTask | null {
  * Create a new task and assign it to a handler
  */
 function createAndAssignNewTask(handlaggarId: string): MockTask {
-    const taskId = String(nextTaskId).padStart(3, '0');
-    const kundbehovsflodeId = String(nextTaskId).padStart(3, '0');
+    const taskId = `task-${String(nextTaskId).padStart(3, '0')}`;
+    const kundbehovsflodeId = `flow-${String(nextTaskId).padStart(3, '0')}`;
     const planerad = new Date();
     planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
     

@@ -1,4 +1,3 @@
-// Utility to proxy requests to backend with fallback to mock data in development
 import { Request, Response } from "express";
 
 export interface ProxyOptions {
@@ -47,7 +46,7 @@ export async function proxyWithFallback(
             }
         };
 
-        // Add body for POST, PUT, PATCH requests
+        // Only includes a body for POST, PUT, PATCH requests
         if (body && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
             fetchOptions.body = JSON.stringify(body);
         }
@@ -61,7 +60,7 @@ export async function proxyWithFallback(
         const data = await response.json();
         console.log(`[PROXY] Success: ${method} ${targetUrl}`);
         
-        // Apply success transformation if provided
+        // Apply success transformation if callback function provided, otherwise return raw data
         const finalData = onSuccess ? onSuccess(data) : data;
         
         res.status(response.status).json(finalData);

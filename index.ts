@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "node:url";
-import { mockDataService } from "./mockDataService.js";
+import * as mockDataService from "./mockDataService.js";
 import { proxyWithFallback } from "./proxyWithFallback.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,6 +61,13 @@ app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
         method: 'GET',
         fallbackData: {
             operativa_uppgifter: mockDataService.getAssignedTasks(handlaggarId)
+        },
+        onSuccess: (data) => {
+            // Trigger fallback if operativa_uppgifter is null
+            if (data.operativa_uppgifter === null) {
+                throw new Error('operativa_uppgifter returned null');
+            }
+            return data;
         }
     });
 });
@@ -83,7 +90,14 @@ app.post("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
             return {
                 uppgift: newTask
             };
-        })()
+        })(),
+        onSuccess: (data) => {
+            // Trigger fallback if operativ_uppgift or uppgift is null
+            if (data.operativ_uppgift === null || data.uppgift === null) {
+                throw new Error('operativ_uppgift/uppgift returned null');
+            }
+            return data;
+        }
     });
 });
 
