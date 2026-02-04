@@ -14,7 +14,7 @@ export interface MockTask {
     beskrivning: string;
     verksamhetslogik: string;
     roll: string;
-    url: string;
+    path: string;
 }
 
 let taskPool: MockTask[] = [];
@@ -70,7 +70,7 @@ function initializeTaskPool(): void {
             beskrivning: "Manuell kontroll RTF",
             verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
             roll: "Handläggare",
-            url: "http://localhost:3031/vardAvHusdjur.js"
+            path: "rtf-manuell"
         };
         
         taskPool.push(task);
@@ -142,7 +142,7 @@ function createAndAssignNewTask(handlaggarId: string): MockTask {
         beskrivning: "Manuell kontroll RTF",
         verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
         roll: "Handläggare",
-        url: "http://localhost:3031/vardAvHusdjur.js"
+        path: "rtf-manuell"
     };
     
     nextTaskId++;
