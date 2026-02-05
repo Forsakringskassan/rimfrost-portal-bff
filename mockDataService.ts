@@ -70,7 +70,7 @@ function initializeTaskPool(): void {
             beskrivning: "Manuell kontroll RTF",
             verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
             roll: "Handläggare",
-            url: "http://localhost:3031/vardAvHusdjur.js"
+            url: "/regel/rtf-manuell"
         };
         
         taskPool.push(task);
@@ -142,7 +142,7 @@ function createAndAssignNewTask(handlaggarId: string): MockTask {
         beskrivning: "Manuell kontroll RTF",
         verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
         roll: "Handläggare",
-        url: "http://localhost:3031/vardAvHusdjur.js"
+        url: "/regel/rtf-manuell"
     };
     
     nextTaskId++;

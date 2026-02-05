@@ -55,6 +55,8 @@ app.get("/api/fetch-test-data", async (req, res) => {
 app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `http://localhost:8889/uppgifter/handlaggare/${handlaggarId}`;
+
+    console.log("Get uppgifter triggered")
     
     await proxyWithFallback(req, res, {
         targetUrl: backendUrl,
