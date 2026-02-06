@@ -10,16 +10,50 @@ This is a BFF service that provides an API layer between the frontend and backen
 - **Static file serving** for frontend assets
 - **TypeScript** for type safety
 
-## Development Fallback System
+## System Architecture
 
-This BFF includes an automatic fallback system that serves mock data when the backend at `localhost:8889` is unavailable or returns errors. This ensures you can continue development even when the backend is down or experiencing breaking changes.
+### Communication Flow
 
-**Key features:**
-- ✅ Automatically falls back to mock data when backend fails
-- ✅ Stateful mock tasks that can be assigned and removed
-- ✅ Management endpoints for external micro-frontends
-- ✅ Only active in development mode (safe for production)
-- ✅ Realistic task data matching backend schema
+This is the **Portal BFF** in a micro-frontend architecture:
+
+```
+[Host FE] ←→ [Portal BFF (This)] ←→ [Backend Services (port 8889)]
+    ↓
+[Micro FE] ←→ [Rule BFF] ←→ [Backend Services (port 8890)]
+```
+
+**Responsibilities:**
+
+- Serves task list data to host frontend
+- Handles task assignment and management
+- Provides mock data management endpoints for development
+- Acts as the primary data source for operational tasks (uppgifter)
+
+### Unified Fallback System
+
+**Centralized Data Resilience:**
+All backend communication includes automatic fallback to mock data. This ensures seamless development regardless of backend availability.
+
+**Environment-Driven Behavior:**
+
+```env
+BACKEND_BASE_URL=http://localhost:8889
+FALLBACK_MODE=auto    # auto | always | never
+FALLBACK_TIMEOUT_MS=5000
+```
+
+**Fallback Modes:**
+
+- `auto`: Try backend first, fallback on failure (development default)
+- `always`: Always use mock data (offline development)
+- `never`: Fail fast, no fallback (production)
+
+**Key Features:**
+
+- ✅ Stateful mock task management with realistic data
+- ✅ Consistent with Rule BFF fallback patterns
+- ✅ Zero fallback logic in frontends
+- ✅ Production-safe (fallback disabled)
 
 📖 **See [FALLBACK.md](FALLBACK.md) for complete documentation**
 
@@ -50,13 +84,16 @@ NODE_ENV=development
 ## API Endpoints
 
 ### Health Check
+
 - `GET /api/health` - Returns server status
 
 ### Task Management (with fallback)
+
 - `GET /uppgifter/handlaggare/:handlaggarId` - Fetch tasks for a handler
 - `POST /uppgifter/handlaggare/:handlaggarId` - Assign a new task to a handler
 
 ### Development Only
+
 - `DELETE /uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId` - Remove a task
 - `GET /mock/tasks/stats` - Get mock data statistics
 - `GET /mock/tasks/all` - Get all mock tasks
