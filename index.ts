@@ -28,21 +28,6 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.get("/api/data", (req, res) => {
-    res.json({ data: { message: "This is some example data from the BFF!" }});
-})
-
-app.get("/api/fetch-test-data", async (req, res) => {
-    try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/todos/1');
-        const data = await response.json();
-        res.json(data);
-    } catch (error) {
-        console.error(`Error fetching test data: ${error}`);
-        res.status(500).json({ error: "Failed to fetch test data" });
-    }
-})
-
 // ============================================================================
 // UPPGIFTER (TASKS) ENDPOINTS - With Development Fallback
 // ============================================================================
@@ -52,22 +37,26 @@ app.get("/api/fetch-test-data", async (req, res) => {
  * Fetch all tasks assigned to a specific handler
  * Falls back to mock data in development when backend is unavailable
  */
+
 app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `http://localhost:8889/uppgifter/handlaggare/${handlaggarId}`;
 
-    console.log("Get uppgifter triggered")
+    console.log(`Received request for tasks of handler ${handlaggarId}`);
+    
+    // Prepare fallback data with mock tasks
+    const mockTasks = mockDataService.getAssignedTasks(handlaggarId);
     
     await proxyWithFallback(req, res, {
         targetUrl: backendUrl,
         method: 'GET',
         fallbackData: {
-            operativa_uppgifter: mockDataService.getAssignedTasks(handlaggarId)
+            operativa_uppgifter: mockTasks
         },
         onSuccess: (data) => {
-            // Trigger fallback if operativa_uppgifter is null
-            if (data.operativa_uppgifter === null) {
-                throw new Error('operativa_uppgifter returned null');
+            // Trigger fallback if operativa_uppgifter is null or missing
+            if (!data.operativa_uppgifter || data.operativa_uppgifter === null) {
+                throw new Error('operativa_uppgifter returned null or missing');
             }
             return data;
         }
@@ -79,6 +68,7 @@ app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
  * Assign a new task to a handler
  * Falls back to mock data in development when backend is unavailable
  */
+
 app.post("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `http://localhost:8889/uppgifter/handlaggare/${handlaggarId}`;
@@ -113,6 +103,7 @@ app.post("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
  * Remove a specific task from a handler (simulates task closure/completion)
  * Only works in development
  */
+
 app.delete("/uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId", (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         return res.status(404).json({ error: "Endpoint not available in production" });
@@ -142,6 +133,7 @@ app.delete("/uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId", (req, res)
  * Get statistics about mock tasks (for debugging)
  * Only works in development
  */
+
 app.get("/mock/tasks/stats", (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         return res.status(404).json({ error: "Endpoint not available in production" });
@@ -155,6 +147,7 @@ app.get("/mock/tasks/stats", (req, res) => {
  * Get all tasks in the pool
  * Only works in development
  */
+
 app.get("/mock/tasks/all", (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         return res.status(404).json({ error: "Endpoint not available in production" });
@@ -170,6 +163,7 @@ app.get("/mock/tasks/all", (req, res) => {
  * Reset the mock data service to initial state
  * Only works in development
  */
+
 app.post("/mock/tasks/reset", (req, res) => {
     if (process.env.NODE_ENV === 'production') {
         return res.status(404).json({ error: "Endpoint not available in production" });

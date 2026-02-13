@@ -11,12 +11,6 @@ export interface ProxyOptions {
     onError?: (error: any) => void;
 }
 
-/**
- * Proxy a request to the backend with automatic fallback in development
- * @param req Express request object
- * @param res Express response object
- * @param options Proxy options including target URL and fallback data
- */
 export async function proxyWithFallback(
     req: Request,
     res: Response,
@@ -75,6 +69,7 @@ export async function proxyWithFallback(
         // In development, fallback to mock data
         if (isDevelopment && fallbackData !== undefined) {
             console.log(`[FALLBACK] Using mock data for ${method} ${targetUrl}`);
+            console.log(`[FALLBACK] Fallback data structure:`, JSON.stringify(fallbackData, null, 2));
             res.status(fallbackStatus).json(fallbackData);
         } else {
             // In production or if no fallback, return error
