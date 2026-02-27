@@ -1,8 +1,8 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "node:url";
-import * as mockDataService from "./mockDataService.js";
-import { proxyWithFallback } from "./proxyWithFallback.js";
+import * as mockDataService from "./utils/mockDataService.js";
+import { proxyWithFallback } from "./utils/proxyWithFallback.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,39 +28,32 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// ============================================================================
-// UPPGIFTER (TASKS) ENDPOINTS - With Development Fallback
-// ============================================================================
-
 /**
  * GET /uppgifter/handlaggare/:handlaggarId
  * Fetch all tasks assigned to a specific handler
- * Falls back to mock data in development when backend is unavailable
- */
+*/
 
 app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
-    const backendUrl = `http://localhost:8889/uppgifter/handlaggare/${handlaggarId}`;
+    const backendUrl = `${process.env.TASKS_URL ?? ""}handlaggare/${handlaggarId}`;
 
-    console.log(`Received request for tasks of handler ${handlaggarId}`);
-    
-    // Prepare fallback data with mock tasks
-    const mockTasks = mockDataService.getAssignedTasks(handlaggarId);
-    
-    await proxyWithFallback(req, res, {
-        targetUrl: backendUrl,
-        method: 'GET',
-        fallbackData: {
-            operativa_uppgifter: mockTasks
-        },
-        onSuccess: (data) => {
-            // Trigger fallback if operativa_uppgifter is null or missing
-            if (!data.operativa_uppgifter || data.operativa_uppgifter === null) {
-                throw new Error('operativa_uppgifter returned null or missing');
-            }
-            return data;
+    try {
+        const response = await fetch(backendUrl, { method: 'GET' });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error in tasks fetch. Status: ${response.status}`);
         }
-    });
+
+        const data: any = await response.json();
+
+        // iLog the data sent to FE - move to validateAndReturnData?
+        return res.json(data);
+        // Safety check to only fetch tasks that the handler are qualified for
+        // return validateAndReturnData(data, handlaggarId);
+    } catch (error) {
+        console.error(`Error fetching tasks for handlaggarId ${handlaggarId}:`, error);
+        return res.status(500).json({ error: `Error fetching tasks: ${error}` });
+    }
 });
 
 /**
@@ -71,7 +64,13 @@ app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
 
 app.post("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
-    const backendUrl = `http://localhost:8889/uppgifter/handlaggare/${handlaggarId}`;
+    const backendUrl = `${process.env.TASKS_URL}handlaggare/${handlaggarId}`;
+
+    const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' }});
+    
+    if (!response.ok) {
+        console.error(`Error from backend when assigning task: ${response.status} - ${response.statusText}`);
+    }
     
     await proxyWithFallback(req, res, {
         targetUrl: backendUrl,
@@ -182,14 +181,6 @@ app.post("/mock/tasks/reset", (req, res) => {
 
 const pathToDistFE = path.join(__dirname, "../fe/dist");
 app.use(express.static(pathToDistFE));
-
-// app.get("/*path", (req, res) => {
-//     if (!req.path.startsWith("/api/")) {
-//         res.sendFile(path.join(pathToDistFE, "index.html"));
-//     } else {
-//         res.status(404).send("API endpoint not found");
-//     }
-// })
 
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`);
