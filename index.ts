@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "node:url";
 import * as mockDataService from "./utils/mockDataService.js";
 import { proxyWithFallback } from "./utils/proxyWithFallback.js";
+import { transformUppgift } from "./utils/transformUppgift.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,9 +46,7 @@ app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
         }
 
         const data: any = await response.json();
-
-        // iLog the data sent to FE - move to validateAndReturnData?
-        return res.json(data);
+        return res.json({ ...data, operativa_uppgifter: data.operativa_uppgifter?.map((u: any) => transformUppgift(u)) });
         // Safety check to only fetch tasks that the handler are qualified for
         // return validateAndReturnData(data, handlaggarId);
     } catch (error) {
