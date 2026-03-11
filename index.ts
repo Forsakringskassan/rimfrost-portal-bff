@@ -30,11 +30,11 @@ app.get("/api/health", (req, res) => {
 });
 
 /**
- * GET /uppgifter/handlaggare/:handlaggarId
+ * GET /tasks/:handlaggarId
  * Fetch all tasks assigned to a specific handler
 */
 
-app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
+app.get("/tasks/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `${process.env.TASKS_URL ?? ""}handlaggare/${handlaggarId}`;
 
@@ -56,141 +56,30 @@ app.get("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
 });
 
 /**
- * POST /uppgifter/handlaggare/:handlaggarId
+ * POST /tasks/getNext/:handlaggarId
  * Assign a new task to a handler
- * Falls back to mock data in development when backend is unavailable
  */
 
-app.post("/uppgifter/handlaggare/:handlaggarId", async (req, res) => {
+app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `${process.env.TASKS_URL}handlaggare/${handlaggarId}`;
 
-    const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' }});
+    try {
+        const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' }});
     
-    if (!response.ok) {
-        console.error(`Error from backend when assigning task: ${response.status} - ${response.statusText}`);
-    }
-    
-    await proxyWithFallback(req, res, {
-        targetUrl: backendUrl,
-        method: 'POST',
-        body: req.body,
-        fallbackData: (() => {
-            const newTask = mockDataService.assignTaskToHandler(handlaggarId);
-            return {
-                uppgift: newTask
-            };
-        })(),
-        onSuccess: (data) => {
-            // Trigger fallback if operativ_uppgift or uppgift is null
-            if (data.operativ_uppgift === null || data.uppgift === null) {
-                throw new Error('operativ_uppgift/uppgift returned null');
-            }
-            return data;
+        if (!response.ok) {
+            console.error(`Error from backend when assigning task: ${response.status} - ${response.statusText}`);
+            return res.status(502).json({ error: "Failed to assign task, backend error" });
         }
-    });
-});
 
-// ============================================================================
-// MOCK DATA MANAGEMENT ENDPOINTS (Development Only)
-// These endpoints allow you to manage the mock data from external microfront-ends
-// ============================================================================
-
-/**
- * DELETE /uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId
- * Remove a specific task from a handler (simulates task closure/completion)
- * Only works in development
- */
-
-app.delete("/uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId", (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        return res.status(404).json({ error: "Endpoint not available in production" });
-    }
-
-    const { handlaggarId, uppgiftId } = req.params;
-    const success = mockDataService.removeTaskFromHandler(handlaggarId, uppgiftId);
-    
-    if (success) {
-        res.json({
-            message: "Task removed successfully",
-            handlaggarId,
-            uppgiftId,
-            remainingTasks: mockDataService.getAssignedTasks(handlaggarId).length
-        });
-    } else {
-        res.status(404).json({
-            error: "Task not found or not assigned to this handler",
-            handlaggarId,
-            uppgiftId
-        });
+        const data = await response.json();
+        return res.status(200).json({ uppgift: data });
+    } catch (error) {
+        console.error(`Error assigning task to handlaggarId ${handlaggarId}:`, error);
+        return res.status(500).json({ error: `Error assigning task: ${error}` });
     }
 });
 
-/**
- * GET /mock/tasks/stats
- * Get statistics about mock tasks (for debugging)
- * Only works in development
- */
-
-app.get("/mock/tasks/stats", (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        return res.status(404).json({ error: "Endpoint not available in production" });
-    }
-
-    res.json(mockDataService.getStats());
+app.listen(port, () => {
+    console.log(`BFF server running on http://localhost:${port}`);
 });
-
-/**
- * GET /mock/tasks/all
- * Get all tasks in the pool
- * Only works in development
- */
-
-app.get("/mock/tasks/all", (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        return res.status(404).json({ error: "Endpoint not available in production" });
-    }
-
-    res.json({
-        tasks: mockDataService.getAllTasks()
-    });
-});
-
-/**
- * POST /mock/tasks/reset
- * Reset the mock data service to initial state
- * Only works in development
- */
-
-app.post("/mock/tasks/reset", (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        return res.status(404).json({ error: "Endpoint not available in production" });
-    }
-
-    mockDataService.reset();
-    res.json({
-        message: "Mock data service reset successfully",
-        stats: mockDataService.getStats()
-    });
-});
-
-// ============================================================================
-// STATIC FILES & FALLBACK
-// ============================================================================
-
-const pathToDistFE = path.join(__dirname, "../fe/dist");
-app.use(express.static(pathToDistFE));
-
-app.listen(port, async () => {
-    console.log(`Example app listening on port ${port}`);
-    console.log(`Serving static files from ${pathToDistFE}`);
-
-    if (process.env.TEST_URL) {
-        try {
-            const response = await fetch(process.env.TEST_URL);
-            const data = await response.json();
-        } catch (error) {
-            console.error('Error fetching from TEST_URL:', error);
-        }
-    }
-})
