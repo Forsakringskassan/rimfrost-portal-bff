@@ -2,14 +2,13 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "node:url";
 import * as mockDataService from "./utils/mockDataService.js";
-import { proxyWithFallback } from "./utils/proxyWithFallback.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = "9001"
+const port = "9001";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,26 +31,31 @@ app.get("/api/health", (req, res) => {
 /**
  * GET /tasks/:handlaggarId
  * Fetch all tasks assigned to a specific handler
-*/
-
+ */
 app.get("/tasks/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
     const backendUrl = `${process.env.TASKS_URL ?? ""}handlaggare/${handlaggarId}`;
 
     try {
         const response = await fetch(backendUrl, { method: 'GET' });
-        
+
         if (!response.ok) {
-            throw new Error(`HTTP error in tasks fetch. Status: ${response.status}`);
+            throw new Error(`HTTP error: ${response.status}`);
         }
 
         const data: any = await response.json();
-        return res.json({ ...data, operativa_uppgifter: data.operativa_uppgifter?.map((u: any) => transformUppgift(u)) });
-        // Safety check to only fetch tasks that the handler are qualified for
-        // return validateAndReturnData(data, handlaggarId);
+        const uppgifter = data.operativa_uppgifter;
+
+        if (!uppgifter || uppgifter.length === 0) {
+            throw new Error('No tasks from backend, using fallback');
+        }
+
+        return res.json({ operativa_uppgifter: uppgifter.map((u: any) => transformUppgift(u)) });
+
     } catch (error) {
-        console.error(`Error fetching tasks for handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error fetching tasks: ${error}` });
+        console.warn(`[FALLBACK] Backend unavailable or empty, using mock data`);
+        const tasks = mockDataService.getAssignedTasks(handlaggarId);
+        return res.json({ operativa_uppgifter: tasks.map(transformUppgift) });
     }
 });
 
@@ -59,24 +63,33 @@ app.get("/tasks/:handlaggarId", async (req, res) => {
  * POST /tasks/getNext/:handlaggarId
  * Assign a new task to a handler
  */
-
 app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
-    const backendUrl = `${process.env.TASKS_URL}handlaggare/${handlaggarId}`;
+    const backendUrl = `${process.env.TASKS_URL ?? ""}handlaggare/${handlaggarId}`;
 
     try {
-        const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' }});
-    
+        const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' } });
+
         if (!response.ok) {
-            console.error(`Error from backend when assigning task: ${response.status} - ${response.statusText}`);
-            return res.status(502).json({ error: "Failed to assign task, backend error" });
+            throw new Error(`HTTP error: ${response.status}`);
         }
 
-        const data = await response.json();
-        return res.status(200).json({ uppgift: data });
+        const data: any = await response.json();
+        const uppgift = data.operativ_uppgift;
+
+        if (!uppgift) {
+            throw new Error('No task assigned from backend, using fallback');
+        }
+
+        return res.status(200).json({ uppgift: transformUppgift(uppgift) });
+
     } catch (error) {
-        console.error(`Error assigning task to handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error assigning task: ${error}` });
+        console.warn(`[FALLBACK] Backend unavailable or empty, using mock data`);
+        const task = mockDataService.assignTaskToHandler(handlaggarId);
+        if (!task) {
+            return res.status(404).json({ error: 'No tasks available' });
+        }
+        return res.status(200).json({ uppgift: transformUppgift(task) });
     }
 });
 

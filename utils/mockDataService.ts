@@ -3,7 +3,7 @@
 
 export interface MockTask {
     uppgift_id: string;
-    kundbehovsflode_id: string;
+    handlaggning_id: string;
     skapad: string;
     status: string;
     handlaggar_id: string | null;
@@ -21,61 +21,61 @@ let taskPool: MockTask[] = [];
 let assignedTasks: Map<string, MockTask[]> = new Map();
 let nextTaskId: number = 1;
 
-// Fixed IDs for consistent mapping across micro-frontends fallback data
 const FIXED_TASK_IDS = [
-    { uppgift_id: 'task-001', kundbehovsflode_id: 'flow-001' },
-    { uppgift_id: 'task-002', kundbehovsflode_id: 'flow-002' },
-    { uppgift_id: 'task-003', kundbehovsflode_id: 'flow-003' },
-    { uppgift_id: 'task-004', kundbehovsflode_id: 'flow-004' },
-    { uppgift_id: 'task-005', kundbehovsflode_id: 'flow-005' },
-    { uppgift_id: 'task-006', kundbehovsflode_id: 'flow-006' },
-    { uppgift_id: 'task-007', kundbehovsflode_id: 'flow-007' },
-    { uppgift_id: 'task-008', kundbehovsflode_id: 'flow-008' },
-    { uppgift_id: 'task-009', kundbehovsflode_id: 'flow-009' },
-    { uppgift_id: 'task-010', kundbehovsflode_id: 'flow-010' },
-    { uppgift_id: 'task-011', kundbehovsflode_id: 'flow-011' },
-    { uppgift_id: 'task-012', kundbehovsflode_id: 'flow-012' },
-    { uppgift_id: 'task-013', kundbehovsflode_id: 'flow-013' },
-    { uppgift_id: 'task-014', kundbehovsflode_id: 'flow-014' },
-    { uppgift_id: 'task-015', kundbehovsflode_id: 'flow-015' },
-    { uppgift_id: 'task-016', kundbehovsflode_id: 'flow-016' },
-    { uppgift_id: 'task-017', kundbehovsflode_id: 'flow-017' },
-    { uppgift_id: 'task-018', kundbehovsflode_id: 'flow-018' },
-    { uppgift_id: 'task-019', kundbehovsflode_id: 'flow-019' },
-    { uppgift_id: 'task-020', kundbehovsflode_id: 'flow-020' },
+    { uppgift_id: 'task-001', handlaggning_id: 'Flow-001' },
+    { uppgift_id: 'task-002', handlaggning_id: 'Flow-002' },
+    { uppgift_id: 'task-003', handlaggning_id: 'Flow-003' },
+    { uppgift_id: 'task-004', handlaggning_id: 'Flow-004' },
+    { uppgift_id: 'task-005', handlaggning_id: 'Flow-005' },
+    { uppgift_id: 'task-006', handlaggning_id: 'Flow-006' },
+    { uppgift_id: 'task-007', handlaggning_id: 'Flow-007' },
+    { uppgift_id: 'task-008', handlaggning_id: 'Flow-008' },
+    { uppgift_id: 'task-009', handlaggning_id: 'Flow-009' },
+    { uppgift_id: 'task-010', handlaggning_id: 'Flow-010' },
+    { uppgift_id: 'task-011', handlaggning_id: 'Flow-011' },
+    { uppgift_id: 'task-012', handlaggning_id: 'Flow-012' },
+    { uppgift_id: 'task-013', handlaggning_id: 'Flow-013' },
+    { uppgift_id: 'task-014', handlaggning_id: 'Flow-014' },
+    { uppgift_id: 'task-015', handlaggning_id: 'Flow-015' },
+    { uppgift_id: 'task-016', handlaggning_id: 'Flow-016' },
+    { uppgift_id: 'task-017', handlaggning_id: 'Flow-017' },
+    { uppgift_id: 'task-018', handlaggning_id: 'Flow-018' },
+    { uppgift_id: 'task-019', handlaggning_id: 'Flow-019' },
+    { uppgift_id: 'task-020', handlaggning_id: 'Flow-020' },
 ];
 
 function initializeTaskPool(): void {
-    // Create 20 mock tasks with fixed IDs for consistent mapping
     const baseDate = new Date('2026-01-23');
-    
+
     for (let i = 0; i < FIXED_TASK_IDS.length; i++) {
-        const { uppgift_id, kundbehovsflode_id } = FIXED_TASK_IDS[i];
+        const { uppgift_id, handlaggning_id } = FIXED_TASK_IDS[i];
         const planerad = new Date(baseDate);
         planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
-        
-        // Pre-assign first 5 tasks to the default handler
+
         const handlaggarId = i < 5 ? (process.env.DEFAULT_HANDLER_ID ?? null) : null;
-        
+
+        const isBekreftaBeslut = i % 2 === 0;
+
         const task: MockTask = {
             uppgift_id,
-            kundbehovsflode_id,
+            handlaggning_id,
             skapad: "2026-01-15T08:00:00Z",
             status: "Pågående",
             handlaggar_id: handlaggarId,
             planerad_till: planerad.toISOString(),
             utford: null,
             kundbehov: "Vård av husdjur",
-            regel: "rtf-manuell",
-            beskrivning: "Manuell kontroll RTF",
-            verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
+            regel: isBekreftaBeslut ? "bekrafta-beslut" : "rtf-manuell",
+            beskrivning: isBekreftaBeslut ? "Bekräfta beslut" : "Manuell kontroll RTF",
+            verksamhetslogik: isBekreftaBeslut
+                ? "Granska och bekräfta beslut för vård av husdjur"
+                : "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
             roll: "Handläggare",
-            url: "/regel/rtf-manuell"
+            url: isBekreftaBeslut ? "bekrafta-beslut" : "rtf-manuell",
         };
-        
+
         taskPool.push(task);
-        
-        // Add pre-assigned tasks to the assignedTasks map
+
         if (handlaggarId) {
             if (!assignedTasks.has(handlaggarId)) {
                 assignedTasks.set(handlaggarId, []);
@@ -83,13 +83,10 @@ function initializeTaskPool(): void {
             assignedTasks.get(handlaggarId)!.push(task);
         }
     }
-    
-    nextTaskId = 21; // Next available ID after the initial 20
+
+    nextTaskId = 21;
 }
 
-/**
- * Get all tasks assigned to a specific handler
- */
 export function getAssignedTasks(handlaggarId: string): MockTask[] {
     if (!assignedTasks.has(handlaggarId)) {
         assignedTasks.set(handlaggarId, []);
@@ -97,41 +94,32 @@ export function getAssignedTasks(handlaggarId: string): MockTask[] {
     return assignedTasks.get(handlaggarId)!;
 }
 
-/**
- * Assign a new task to a handler (simulates POST to assign task)
- * Returns the newly assigned task or creates and assigns a new one if none available
- */
 export function assignTaskToHandler(handlaggarId: string): MockTask | null {
     const availableTask = taskPool.find(task => task.handlaggar_id === null);
-    
+
     if (!availableTask) {
         return createAndAssignNewTask(handlaggarId);
     }
 
-    // Assign the task to the handler
     availableTask.handlaggar_id = handlaggarId;
-    
-    // Add to assigned tasks list
+
     if (!assignedTasks.has(handlaggarId)) {
         assignedTasks.set(handlaggarId, []);
     }
     assignedTasks.get(handlaggarId)!.push(availableTask);
-    
+
     return availableTask;
 }
 
-/**
- * Create a new task and assign it to a handler
- */
 function createAndAssignNewTask(handlaggarId: string): MockTask {
     const taskId = `task-${String(nextTaskId).padStart(3, '0')}`;
-    const kundbehovsflodeId = `flow-${String(nextTaskId).padStart(3, '0')}`;
+    const handlaggningId = `hdl-0000-0000-${String(nextTaskId).padStart(4, '0')}`;
     const planerad = new Date();
     planerad.setDate(planerad.getDate() + Math.floor(Math.random() * 14) + 1);
-    
+
     const newTask: MockTask = {
         uppgift_id: taskId,
-        kundbehovsflode_id: kundbehovsflodeId,
+        handlaggning_id: handlaggningId,
         skapad: new Date().toISOString(),
         status: "Pågående",
         handlaggar_id: handlaggarId,
@@ -142,59 +130,48 @@ function createAndAssignNewTask(handlaggarId: string): MockTask {
         beskrivning: "Manuell kontroll RTF",
         verksamhetslogik: "Kontrollera om ansökande uppfyller kraven för vård av husdjur",
         roll: "Handläggare",
-        url: "/regel/rtf-manuell"
+        url: "rtf-manuell",
     };
-    
+
     nextTaskId++;
     taskPool.push(newTask);
-    
+
     if (!assignedTasks.has(handlaggarId)) {
         assignedTasks.set(handlaggarId, []);
     }
     assignedTasks.get(handlaggarId)!.push(newTask);
-    
+
     return newTask;
 }
 
-/**
- * Remove a task from a handler's assigned tasks (simulates task completion/closure)
- */
 export function removeTaskFromHandler(handlaggarId: string, uppgiftId: string): boolean {
     if (!assignedTasks.has(handlaggarId)) {
         return false;
     }
-    
+
     const tasks = assignedTasks.get(handlaggarId)!;
     const taskIndex = tasks.findIndex(task => task.uppgift_id === uppgiftId);
-    
+
     if (taskIndex === -1) {
         return false;
     }
-    
-    // Remove from assigned tasks
-    const [removedTask] = tasks.splice(taskIndex, 1);
-    
-    // Mark task as unassigned in the pool
+
+    tasks.splice(taskIndex, 1);
+
     const poolTask = taskPool.find(task => task.uppgift_id === uppgiftId);
     if (poolTask) {
         poolTask.handlaggar_id = null;
         poolTask.status = "Avslutad";
         poolTask.utford = new Date().toISOString();
     }
-    
+
     return true;
 }
 
-/**
- * Get all tasks in the pool (for debugging/management)
- */
 export function getAllTasks(): MockTask[] {
     return taskPool;
 }
 
-/**
- * Reset the service to initial state
- */
 export function reset(): void {
     taskPool = [];
     assignedTasks.clear();
@@ -202,14 +179,11 @@ export function reset(): void {
     initializeTaskPool();
 }
 
-/**
- * Get statistics about the current state
- */
 export function getStats() {
     const totalTasks = taskPool.length;
     const assignedCount = taskPool.filter(task => task.handlaggar_id !== null).length;
     const unassignedCount = totalTasks - assignedCount;
-    
+
     return {
         totalTasks,
         assignedCount,
@@ -217,10 +191,9 @@ export function getStats() {
         handlers: assignedTasks.size,
         handlerDetails: Array.from(assignedTasks.entries()).map(([id, tasks]) => ({
             handlaggarId: id,
-            taskCount: tasks.length
-        }))
+            taskCount: tasks.length,
+        })),
     };
 }
 
-// Initialize on module load
 initializeTaskPool();
