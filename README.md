@@ -40,6 +40,7 @@ All backend communication includes automatic fallback to mock data. This ensures
 BACKEND_BASE_URL=http://localhost:8889
 FALLBACK_MODE=auto    # auto | always | never
 FALLBACK_TIMEOUT_MS=5000
+HANDLAGGARE_URL=http://localhost:8888/handlaggare
 ```
 
 **Fallback Modes:**
