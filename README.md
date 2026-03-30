@@ -1,110 +1,126 @@
-# Rimfrost Portal BFF (Backend for Frontend)
+# Rimfrost Portal BFF
 
-This is a BFF service that provides an API layer between the portal frontend and backend services.
+Backend for Frontend (BFF) for portal task handling.
+
+The service exposes task-oriented endpoints used by the portal frontend and forwards requests to OUL backend services.
 
 ## Features
 
-- **Express-based API** serving frontend requests
-- **Development Fallback System**: Automatically serves mock data when the backend is unavailable
-- **CORS enabled** for cross-origin requests
-- **TypeScript** for type safety
+- Express API written in TypeScript
+- CORS enabled (`*`) with support for preflight (`OPTIONS`)
+- Health endpoint for runtime checks
+- Task fetch and task assignment endpoints
+- Response transformation from backend `operativa_uppgifter` to frontend-friendly shape
 
-## System Architecture
+## Architecture
 
-### Communication Flow
+Communication flow:
 
-This is the **Portal BFF** in a micro-frontend architecture:
 ```
-[Host FE] ←→ [Portal BFF (This)] ←→ [Backend Services]
-    ↓
-[Micro FE] ←→ [Rule BFF] ←→ [Backend Services]
+[Host FE] <-> [Portal BFF] <-> [OUL Backend]
 ```
 
-**Responsibilities:**
+Current BFF responsibilities:
 
-- Serves task list data to host frontend
-- Handles task assignment and management
-- Provides handläggare list for dropdown selection
-- Acts as the primary data source for operational tasks (uppgifter)
+- Return tasks for a specific handlaggare
+- Assign next task for a specific handlaggare
+- Normalize task payload fields via `transformUppgift`
 
-### Fallback System
+## Prerequisites
 
-**Centralized Data Resilience:**
-All backend communication includes automatic fallback to mock data. This ensures seamless development regardless of backend availability.
-
-**Environment-Driven Behavior:**
-
-```env
-BACKEND_BASE_URL=http://localhost:8889
-FALLBACK_MODE=auto    # auto | always | never
-FALLBACK_TIMEOUT_MS=5000
-```
-
-**Fallback Modes:**
-
-- `auto`: Try backend first, fallback on failure (development default)
-- `always`: Always use mock data (offline development)
-- `never`: Fail fast, no fallback (production)
-
-**Key Features:**
-
-- ✅ Stateful mock task management with realistic data
-- ✅ Consistent with Rule BFF fallback patterns
-- ✅ Zero fallback logic in frontends
-- ✅ Production-safe (fallback disabled)
-
-📖 **See [FALLBACK.md](FALLBACK.md) for complete documentation**
+- Node.js 20+
+- npm
 
 ## Quick Start
+
 ```bash
-# Install dependencies
 npm install
-
-# Run in development mode (with hot reload)
 npm run dev
-
-# Build for production
-npm run build
-
-# Run production build
-npm start
 ```
+
+The service starts on `http://localhost:9001`.
+
+## Scripts
+
+- `npm run dev` - Run with hot reload (`tsx --watch`) and `.env` loading
+- `npm run build` - Compile TypeScript to `dist/`
+- `npm run start` - Run compiled output (`dist/index.js`) with `.env`
+- `npm run type-check` - TypeScript check without emitting files
+- `npm run lint` - Lint source
+- `npm run lint:fix` - Auto-fix lint issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Verify formatting
 
 ## Environment Variables
 
-Create a `.env` file in the root directory:
+Create `.env` in the project root:
+
 ```env
 NODE_ENV=development
-DEFAULT_HANDLER_ID=469ddd20-6796-4e05-9e18-6a95953f6cb3
-TASKS_URL=http://localhost:8889/uppgifter/
-HANDLAGGARE_URL=http://localhost:8888/handlaggare
+BE_OUL_URL=http://localhost:8889
 ```
 
-## API Endpoints
+Notes:
 
-### Health Check
+- `BE_OUL_URL` is used for both task fetch and task assignment backend calls.
+- If `BE_OUL_URL` is missing, backend requests will fail due to invalid target URL.
 
-- `GET /api/health` - Returns server status
+## API
 
-### Handläggare
+### `GET /api/health`
 
-- `GET /handlaggare` - Fetch list of available case handlers (with mock fallback)
+Returns service status.
 
-### Task Management
+Example response:
 
-- `GET /tasks/:handlaggarId` - Fetch all tasks assigned to a specific handler
-- `POST /tasks/getNext/:handlaggarId` - Assign a new task to a handler
+```json
+{
+    "status": "ok",
+    "timestamp": "2026-03-30T12:34:56.789Z"
+}
+```
+
+### `GET /tasks/:handlaggarId`
+
+Fetches tasks from:
+
+`{BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
+
+Returns backend payload with `operativa_uppgifter` transformed through `utils/transformUppgift.ts`.
+
+Error handling:
+
+- `500` if backend call fails or returns non-OK status
+
+### `POST /tasks/getNext/:handlaggarId`
+
+Assigns next task via:
+
+`POST {BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
+
+Forwards request body as JSON.
+
+Error handling:
+
+- `502` when backend responds with non-OK status
+- `500` on request/transport failures
 
 ## Project Structure
+
 ```
 rimfrost-portal-bff/
-├── index.ts                              # Main server file
-└── utils/
-    ├── mockDataService.ts                # Mock data for tasks and handläggare
-    ├── transformUppgift.ts               # Data transformation
-    ├── proxyWithFallback.ts              # Proxy with fallback logic
-    ├── checkTaskQualification.ts         # Task qualification check
-    ├── compareHandlerQualifications.ts   # Handler qualification comparison
-    ├── fetchHandlerQualifications.ts     # Fetch handler qualifications
-    └── validateAndReturnData.ts          # Data validation
+|- index.ts
+|- utils/
+|  |- transformUppgift.ts
+|  |- checkTaskQualification.ts
+|  |- compareHandlerQualifications.ts
+|  |- fetchHandlerQualifications.ts
+|  |- validateAndReturnData.ts
+|- package.json
+|- tsconfig.json
 ```
+
+## Implementation Notes
+
+- The active routes are implemented in `index.ts`.
+- The task qualification and fallback helper utilities exist in `utils/`, but are not currently wired into the active routes.
