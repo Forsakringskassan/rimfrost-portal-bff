@@ -30,29 +30,6 @@ app.get("/api/health", (req, res) => {
 });
 
 /**
- * GET /handlaggare
- * Fetch all available case handlers
- */
-app.get("/handlaggare", async (req, res) => {
-    const backendUrl = `${process.env.HANDLAGGARE_URL ?? ""}`;
-
-    try {
-        const response = await fetch(backendUrl, { method: 'GET' });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return res.json(data);
-
-    } catch (error) {
-        console.warn(`[FALLBACK] Backend unavailable, using mock handlaggare`);
-        return res.json({ handlaggare: mockDataService.mockHandlaggare });
-    }
-});
-
-/**
  * GET /tasks/:handlaggarId
  * Fetch all tasks assigned to a specific handler
 */

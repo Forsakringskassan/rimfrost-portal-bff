@@ -17,12 +17,6 @@ export interface MockTask {
     url: string;
 }
 
-export interface MockHandlaggare {
-    handlaggarId: string;
-    fornamn: string;
-    efternamn: string;
-}
-
 let taskPool: MockTask[] = [];
 let assignedTasks: Map<string, MockTask[]> = new Map();
 let nextTaskId: number = 1;
@@ -49,24 +43,6 @@ const FIXED_TASK_IDS = [
     { uppgift_id: 'task-018', kundbehovsflode_id: 'flow-018' },
     { uppgift_id: 'task-019', kundbehovsflode_id: 'flow-019' },
     { uppgift_id: 'task-020', kundbehovsflode_id: 'flow-020' },
-];
-
-export const mockHandlaggare: MockHandlaggare[] = [
-    {
-        handlaggarId: '469ddd20-6796-4e05-9e18-6a95953f6cb3',
-        fornamn: 'Lisa',
-        efternamn: 'Tass',
-    },
-    {
-        handlaggarId: '550e8400-e29b-41d4-a716-446655440001',
-        fornamn: 'Karl',
-        efternamn: 'von Vovve',
-    },
-    {
-        handlaggarId: '550e8400-e29b-41d4-a716-446655440002',
-        fornamn: 'Åsa',
-        efternamn: 'Missesson',
-    },
 ];
 
 function initializeTaskPool(): void {

@@ -29,7 +29,31 @@ This is the **Portal BFF** in a micro-frontend architecture:
 
 ### Fallback System
 
-All backend communication includes automatic fallback to mock data when the backend is unavailable. This ensures seamless development regardless of backend availability.
+**Centralized Data Resilience:**
+All backend communication includes automatic fallback to mock data. This ensures seamless development regardless of backend availability.
+
+**Environment-Driven Behavior:**
+
+```env
+BACKEND_BASE_URL=http://localhost:8889
+FALLBACK_MODE=auto    # auto | always | never
+FALLBACK_TIMEOUT_MS=5000
+```
+
+**Fallback Modes:**
+
+- `auto`: Try backend first, fallback on failure (development default)
+- `always`: Always use mock data (offline development)
+- `never`: Fail fast, no fallback (production)
+
+**Key Features:**
+
+- ✅ Stateful mock task management with realistic data
+- ✅ Consistent with Rule BFF fallback patterns
+- ✅ Zero fallback logic in frontends
+- ✅ Production-safe (fallback disabled)
+
+📖 **See [FALLBACK.md](FALLBACK.md) for complete documentation**
 
 ## Quick Start
 ```bash
