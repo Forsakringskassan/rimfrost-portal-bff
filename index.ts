@@ -1,10 +1,5 @@
 import express from "express";
-import path from "path";
-import { fileURLToPath } from "node:url";
 import { transformUppgift } from "./utils/transformUppgift.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = "9001"
