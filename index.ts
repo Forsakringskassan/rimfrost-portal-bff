@@ -1,8 +1,6 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "node:url";
-import * as mockDataService from "./utils/mockDataService.js";
-import { proxyWithFallback } from "./utils/proxyWithFallback.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +34,8 @@ app.get("/api/health", (req, res) => {
 
 app.get("/tasks/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
-    const backendUrl = `${process.env.TASKS_URL ?? ""}handlaggare/${handlaggarId}`;
+    const oulUrl = process.env.BE_OUL_URL ?? "";
+    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${handlaggarId}`;
 
     try {
         const response = await fetch(backendUrl, { method: 'GET' });
@@ -62,7 +61,8 @@ app.get("/tasks/:handlaggarId", async (req, res) => {
 
 app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
     const { handlaggarId } = req.params;
-    const backendUrl = `${process.env.TASKS_URL}handlaggare/${handlaggarId}`;
+    const oulUrl = process.env.BE_OUL_URL ?? "";
+    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${handlaggarId}`;
 
     try {
         const response = await fetch(backendUrl, { method: 'POST', body: JSON.stringify(req.body), headers: { 'Content-Type': 'application/json' }});
