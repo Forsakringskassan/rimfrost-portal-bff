@@ -6,12 +6,13 @@ type RawOperativUppgift = {
   handlaggar_id: string;
   planerad_till?: string;
   utford?: string;
-  kundbehov: string;
+  individer: string[];
   regel: string;
   beskrivning: string;
   verksamhetslogik: string;
   roll: string;
   url: string;
+  yrkande: string;
 };
 
 export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
@@ -23,11 +24,12 @@ export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
     handlaggarId: rawOperativUppgift.handlaggar_id,
     planeradTill: rawOperativUppgift.planerad_till || "",
     utford: rawOperativUppgift.utford || "",
-    kundbehov: rawOperativUppgift.kundbehov,
+    individer: rawOperativUppgift.individer,
     regel: rawOperativUppgift.regel,
     beskrivning: rawOperativUppgift.beskrivning,
     verksamhetslogik: rawOperativUppgift.verksamhetslogik,
     roll: rawOperativUppgift.roll,
     url: rawOperativUppgift.url,
+    yrkande: rawOperativUppgift.yrkande,
   };
 }
