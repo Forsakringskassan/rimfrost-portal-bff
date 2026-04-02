@@ -2,7 +2,7 @@ import express from "express";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const app = express();
-const port = "9001"
+const port = 9001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
