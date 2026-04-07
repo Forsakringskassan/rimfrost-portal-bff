@@ -12,7 +12,6 @@ type RawOperativUppgift = {
   verksamhetslogik: string;
   roll: string;
   url: string;
-  yrkande: string;
 };
 
 export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
@@ -25,12 +24,10 @@ export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
     planeradTill: rawOperativUppgift.planerad_till || "",
     utford: rawOperativUppgift.utford || "",
     individer: rawOperativUppgift.individer,
-    kundbehov: rawOperativUppgift.yrkande,
     regel: rawOperativUppgift.regel,
     beskrivning: rawOperativUppgift.beskrivning,
     verksamhetslogik: rawOperativUppgift.verksamhetslogik,
     roll: rawOperativUppgift.roll,
     url: rawOperativUppgift.url,
-    yrkande: rawOperativUppgift.yrkande,
   };
 }
