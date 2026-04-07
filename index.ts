@@ -67,8 +67,9 @@ app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
             return res.status(502).json({ error: "Failed to assign task, backend error" });
         }
 
-        const data = await response.json();
-        return res.status(200).json({ uppgift: data });
+        const data = await response.json() as { operativ_uppgift?: any };
+        const transformed = data.operativ_uppgift ? transformUppgift(data.operativ_uppgift) : null;
+        return res.status(200).json({ uppgift: transformed });
     } catch (error) {
         console.error(`Error assigning task to handlaggarId ${handlaggarId}:`, error);
         return res.status(500).json({ error: `Error assigning task: ${error}` });
