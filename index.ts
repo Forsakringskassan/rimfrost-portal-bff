@@ -58,6 +58,8 @@ app.get("/tasks/:handlaggarId", async (req, res) => {
         }
 
         const data: any = await response.json();
+        // Safety check to only fetch tasks that the handler are qualified for
+        // return validateAndReturnData(data, handlaggarId);
         return res.json({
             ...data,
             operativa_uppgifter: data.operativa_uppgifter?.map((u: any) => transformUppgift(u)),

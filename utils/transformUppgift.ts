@@ -1,17 +1,17 @@
 interface RawUppgift {
-  uppgift_id?: string;
-  handlaggning_id?: string;
-  skapad?: string;
-  status?: string;
-  handlaggar_id?: string | null;
-  planerad_till?: string | null;
-  utford?: string | null;
-  kundbehov?: string;
-  regel?: string;
+  uppgift_id: string;
+  handlaggning_id: string;
+  skapad: string;
+  status: string;
+  handlaggar_id: string | null;
+  planerad_till: string | null;
+  utford: string | null;
+  kundbehov: string;
+  regel: string;
   beskrivning?: string;
-  verksamhetslogik?: string;
-  roll?: string;
-  url?: string;
+  verksamhetslogik: string;
+  roll: string;
+  url: string;
 }
 
 export function transformUppgift(rawOperativUppgift: RawUppgift) {
