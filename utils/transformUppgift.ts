@@ -25,6 +25,7 @@ export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
     planeradTill: rawOperativUppgift.planerad_till || "",
     utford: rawOperativUppgift.utford || "",
     individer: rawOperativUppgift.individer,
+    kundbehov: rawOperativUppgift.yrkande,
     regel: rawOperativUppgift.regel,
     beskrivning: rawOperativUppgift.beskrivning,
     verksamhetslogik: rawOperativUppgift.verksamhetslogik,
