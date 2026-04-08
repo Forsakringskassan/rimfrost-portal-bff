@@ -18,6 +18,6 @@ export const mockHandlaggare: MockHandlaggare[] = [
     {
         handlaggarId: '550e8400-e29b-41d4-a716-446655440002',
         fornamn: 'Åsa',
-        efternamn: 'Ormsäter',
+        efternamn: 'Ormsäters',
     },
 ];
