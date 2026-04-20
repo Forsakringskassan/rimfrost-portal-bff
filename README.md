@@ -53,17 +53,29 @@ The service starts on `http://localhost:9001`.
 
 ## Environment Variables
 
-Create `.env` in the project root:
+Create `.env` from `.env.example`:
 
-```env
-NODE_ENV=development
-BE_OUL_URL=http://localhost:8889
+```bash
+cp .env.example .env
 ```
 
-Notes:
+| Variable | Required | Description |
+|---|---|---|
+| `PORT` | No (default `9001`) | Port the server listens on |
+| `HANDLAGGARE_URL` | Yes | Full URL of the handläggare list endpoint |
+| `BE_OUL_URL` | Yes | Base URL of the OUL service |
 
-- `BE_OUL_URL` is used for both task fetch and task assignment backend calls.
-- If `BE_OUL_URL` is missing, backend requests will fail due to invalid target URL.
+## Docker
+
+```bash
+docker build -t rimfrost-portal-bff .
+docker run -p 9001:9001 \
+  -e HANDLAGGARE_URL=https://handlaggning.example.com/handlaggare \
+  -e BE_OUL_URL=https://oul.example.com \
+  rimfrost-portal-bff
+```
+
+Environment variables are read from the container environment at startup — do **not** use `--env-file .env` in production, set them via `-e` flags or the orchestrator's secret/config mechanism.
 
 ## API
 

@@ -3,7 +3,7 @@ import { mockHandlaggare } from "./utils/mockDataService.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const app = express();
-const port = 9001;
+const port = Number(process.env.PORT) || 9001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
