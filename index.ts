@@ -3,7 +3,7 @@ import { mockHandlaggare } from "./utils/mockDataService.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const app = express();
-const port = 9001;
+const port = Number(process.env.PORT) || 9001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -66,7 +66,7 @@ app.get("/tasks/:handlaggarId", async (req, res) => {
         });
     } catch (error) {
         console.error(`Error fetching tasks for handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error fetching tasks: ${error}` });
+        return res.status(500).json({ error: `Error fetching tasks` });
     }
 });
 
@@ -96,7 +96,7 @@ app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
         return res.status(200).json({ uppgift: transformed });
     } catch (error) {
         console.error(`Error assigning task to handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error assigning task: ${error}` });
+        return res.status(500).json({ error: `Error assigning task` });
     }
 });
 
