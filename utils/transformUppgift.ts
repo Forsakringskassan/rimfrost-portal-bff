@@ -12,6 +12,8 @@ type RawOperativUppgift = {
   verksamhetslogik: string;
   roll: string;
   url: string;
+  behorigheter: string[];
+  skyddad_identitet: boolean;
 };
 
 export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
@@ -29,5 +31,7 @@ export function transformUppgift(rawOperativUppgift: RawOperativUppgift) {
     verksamhetslogik: rawOperativUppgift.verksamhetslogik,
     roll: rawOperativUppgift.roll,
     url: rawOperativUppgift.url,
+    behorigheter: rawOperativUppgift.behorigheter,
+    skyddadIdentitet: rawOperativUppgift.skyddad_identitet ?? false,
   };
 }
