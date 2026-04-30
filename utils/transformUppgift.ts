@@ -1,12 +1,17 @@
+type IdTyp = {
+  typId: string;
+  varde: string;
+};
+
 type RawOperativUppgift = {
   uppgift_id: string;
   handlaggning_id: string;
   skapad: string;
   status: string;
-  handlaggar_id: string;
+  handlaggar_id: IdTyp;
   planerad_till?: string;
   utford?: string;
-  individer: string[];
+  individer: IdTyp[];
   regel: string;
   beskrivning: string;
   verksamhetslogik: string;

@@ -3,7 +3,7 @@ import { mockHandlaggare } from "./utils/mockDataService.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
 
 const app = express();
-const port = 9001;
+const port = Number(process.env.PORT) || 9001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,28 +27,23 @@ app.get("/api/health", (req, res) => {
  * GET /handlaggare
  * Fetch all available case handlers (with mock fallback)
  */
-app.get("/handlaggare", async (req, res) => {
-    const backendUrl = process.env.HANDLAGGARE_URL ?? "";
-
-    try {
-        const response = await fetch(backendUrl, { method: "GET" });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
-        return res.json(data);
-    } catch (error) {
-        console.warn(`[FALLBACK] Backend unavailable, using mock handlaggare`);
-        return res.json({ handlaggare: mockHandlaggare });
-    }
+app.get("/handlaggare", async (_req, res) => {
+    // TODO: Fetch from handlaggning service once the /handlaggare endpoint is implemented
+    // const backendUrl = process.env.HANDLAGGARE_URL ?? "";
+    // const response = await fetch(backendUrl, { method: "GET", signal: AbortSignal.timeout(2000) });
+    // const data = await response.json();
+    // return res.json(data);
+    return res.json({ handlaggare: mockHandlaggare });
 });
 
 /**
- * GET /tasks/:handlaggarId
+ * POST /tasks
  * Fetch all tasks assigned to a specific handler
  */
-app.get("/tasks/:handlaggarId", async (req, res) => {
-    const { handlaggarId } = req.params;
+app.post("/tasks", async (req, res) => {
+    const { typId, varde } = req.body;
     const oulUrl = process.env.BE_OUL_URL ?? "";
-    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${handlaggarId}`;
+    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${typId}/${varde}`;
 
     try {
         const response = await fetch(backendUrl, { method: "GET" });
@@ -59,25 +54,25 @@ app.get("/tasks/:handlaggarId", async (req, res) => {
 
         const data: any = await response.json();
         // Safety check to only fetch tasks that the handler are qualified for
-        // return validateAndReturnData(data, handlaggarId);
+        // return validateAndReturnData(data, typId);
         return res.json({
             ...data,
             operativa_uppgifter: data.operativa_uppgifter?.map((u: any) => transformUppgift(u)),
         });
     } catch (error) {
-        console.error(`Error fetching tasks for handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error fetching tasks: ${error}` });
+        console.error(`Error fetching tasks for handlaggarId ${typId}/${varde}:`, error);
+        return res.status(500).json({ error: `Error fetching tasks` });
     }
 });
 
 /**
- * POST /tasks/getNext/:handlaggarId
+ * POST /tasks/getNext
  * Assign a new task to a handler
  */
-app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
-    const { handlaggarId } = req.params;
+app.post("/tasks/getNext", async (req, res) => {
+    const { typId, varde } = req.body;
     const oulUrl = process.env.BE_OUL_URL ?? "";
-    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${handlaggarId}`;
+    const backendUrl = `${oulUrl}/uppgifter/handlaggare/${typId}/${varde}`;
 
     try {
         const response = await fetch(backendUrl, {
@@ -95,8 +90,8 @@ app.post("/tasks/getNext/:handlaggarId", async (req, res) => {
         const transformed = data.operativ_uppgift ? transformUppgift(data.operativ_uppgift) : null;
         return res.status(200).json({ uppgift: transformed });
     } catch (error) {
-        console.error(`Error assigning task to handlaggarId ${handlaggarId}:`, error);
-        return res.status(500).json({ error: `Error assigning task: ${error}` });
+        console.error(`Error assigning task to handlaggarId ${typId}/${varde}:`, error);
+        return res.status(500).json({ error: `Error assigning task` });
     }
 });
 
