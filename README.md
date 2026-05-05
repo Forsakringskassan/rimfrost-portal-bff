@@ -1,89 +1,126 @@
-# Rimfrost FE BFF (Backend for Frontend)
+# Rimfrost Portal BFF
 
-This is a BFF service that provides an API layer between the frontend and backend services.
+Backend for Frontend (BFF) for portal task handling.
+
+The service exposes task-oriented endpoints used by the portal frontend and forwards requests to OUL backend services.
 
 ## Features
 
-- **Express-based API** serving frontend requests
-- **Development Fallback System**: Automatically serves mock data when the backend is unavailable (development only)
-- **CORS enabled** for cross-origin requests
-- **Static file serving** for frontend assets
-- **TypeScript** for type safety
+- Express API written in TypeScript
+- CORS enabled (`*`) with support for preflight (`OPTIONS`)
+- Health endpoint for runtime checks
+- Task fetch and task assignment endpoints
+- Response transformation from backend `operativa_uppgifter` to frontend-friendly shape
 
-## Development Fallback System
+## Architecture
 
-This BFF includes an automatic fallback system that serves mock data when the backend at `localhost:8889` is unavailable or returns errors. This ensures you can continue development even when the backend is down or experiencing breaking changes.
+Communication flow:
 
-**Key features:**
-- ✅ Automatically falls back to mock data when backend fails
-- ✅ Stateful mock tasks that can be assigned and removed
-- ✅ Management endpoints for external micro-frontends
-- ✅ Only active in development mode (safe for production)
-- ✅ Realistic task data matching backend schema
+```
+[Host FE] <-> [Portal BFF] <-> [OUL Backend]
+```
 
-📖 **See [FALLBACK.md](FALLBACK.md) for complete documentation**
+Current BFF responsibilities:
+
+- Return tasks for a specific handlaggare
+- Assign next task for a specific handlaggare
+- Normalize task payload fields via `transformUppgift`
+
+## Prerequisites
+
+- Node.js 20+
+- npm
 
 ## Quick Start
 
 ```bash
-# Install dependencies
 npm install
-
-# Run in development mode (with hot reload)
 npm run dev
-
-# Build for production
-npm run build
-
-# Run production build
-npm start
 ```
+
+The service starts on `http://localhost:9001`.
+
+## Scripts
+
+- `npm run dev` - Run with hot reload (`tsx --watch`) and `.env` loading
+- `npm run build` - Compile TypeScript to `dist/`
+- `npm run start` - Run compiled output (`dist/index.js`) with `.env`
+- `npm run type-check` - TypeScript check without emitting files
+- `npm run lint` - Lint source
+- `npm run lint:fix` - Auto-fix lint issues
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Verify formatting
 
 ## Environment Variables
 
-Create a `.env` file in the root directory:
+Create `.env` in the project root:
 
 ```env
 NODE_ENV=development
+BE_OUL_URL=http://localhost:8889
 ```
 
-## API Endpoints
+Notes:
 
-### Health Check
-- `GET /api/health` - Returns server status
+- `BE_OUL_URL` is used for both task fetch and task assignment backend calls.
+- If `BE_OUL_URL` is missing, backend requests will fail due to invalid target URL.
 
-### Task Management (with fallback)
-- `GET /uppgifter/handlaggare/:handlaggarId` - Fetch tasks for a handler
-- `POST /uppgifter/handlaggare/:handlaggarId` - Assign a new task to a handler
+## API
 
-### Development Only
-- `DELETE /uppgifter/handlaggare/:handlaggarId/uppgift/:uppgiftId` - Remove a task
-- `GET /mock/tasks/stats` - Get mock data statistics
-- `GET /mock/tasks/all` - Get all mock tasks
-- `POST /mock/tasks/reset` - Reset mock data
+### `GET /api/health`
 
-## Testing the Fallback System
+Returns service status.
 
-```bash
-# Make sure backend at localhost:8889 is DOWN
-# Start the BFF
-npm run dev
+Example response:
 
-# In another terminal, run the test script
-node test-fallback.js
+```json
+{
+    "status": "ok",
+    "timestamp": "2026-03-30T12:34:56.789Z"
+}
 ```
+
+### `GET /tasks/:handlaggarId`
+
+Fetches tasks from:
+
+`{BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
+
+Returns backend payload with `operativa_uppgifter` transformed through `utils/transformUppgift.ts`.
+
+Error handling:
+
+- `500` if backend call fails or returns non-OK status
+
+### `POST /tasks/getNext/:handlaggarId`
+
+Assigns next task via:
+
+`POST {BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
+
+Forwards request body as JSON.
+
+Error handling:
+
+- `502` when backend responds with non-OK status
+- `500` on request/transport failures
 
 ## Project Structure
 
 ```
-rimfrost-fe-bff/
-├── index.ts                    # Main server file
-├── mockDataService.ts          # Mock data management
-├── proxyWithFallback.ts        # Proxy with fallback logic
-├── test-fallback.js           # Test script
-├── assets/
-│   └── fallback.json          # Fallback data reference
-├── examples/
-│   └── frontend-usage.js      # Frontend integration examples
-└── FALLBACK.md                # Fallback system documentation
+rimfrost-portal-bff/
+|- index.ts
+|- utils/
+|  |- transformUppgift.ts
+|  |- checkTaskQualification.ts
+|  |- compareHandlerQualifications.ts
+|  |- fetchHandlerQualifications.ts
+|  |- validateAndReturnData.ts
+|- package.json
+|- tsconfig.json
 ```
+
+## Implementation Notes
+
+- The active routes are implemented in `index.ts`.
+- The task qualification and fallback helper utilities exist in `utils/`, but are not currently wired into the active routes.
