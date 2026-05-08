@@ -1,6 +1,11 @@
 import express from "express";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { resolve, dirname } from "node:path";
 import { mockHandlaggare } from "./utils/mockDataService.js";
 import { transformUppgift } from "./utils/transformUppgift.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const port = Number(process.env.PORT) || 9001;
@@ -21,6 +26,23 @@ app.use((req, res, next) => {
 
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+/**
+ * GET /api/route-manifest
+ * Serves the micro-frontend remote registry.
+ * In Kubernetes, mount a ConfigMap as a file and point REMOTES_CONFIG_PATH at it —
+ * updating the ConfigMap updates the registry with no rebuild or redeploy of the host.
+ */
+app.get("/api/route-manifest", async (_req, res) => {
+    const configPath = process.env.REMOTES_CONFIG_PATH ?? resolve(__dirname, "remotes.json");
+    try {
+        const data = await readFile(configPath, "utf-8");
+        return res.json(JSON.parse(data));
+    } catch (error) {
+        console.error("Error reading remotes config from", configPath, error);
+        return res.status(500).json({ error: "Failed to load remotes config" });
+    }
 });
 
 /**
