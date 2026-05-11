@@ -11,6 +11,12 @@
       "module": "BekraftaBeslut",
       "devEntry": "http://localhost:3033/mf-manifest.json",
       "prodEntry": "https://cdn.example.com/bekraftabeslut/mf-manifest.json"
+    },
+    "remoteExample": {
+      "scope": "remoteExample",
+      "module": "ExampleComponent",
+      "devEntry": "http://localhost:3039/mf-manifest.json",
+      "prodEntry": "https://cdn.example.com/template/mf-manifest.json"
     }
   }
 }
