@@ -13,8 +13,6 @@ import org.slf4j.MDC;
 import se.fk.github.portalbff.integration.OulClient;
 import se.fk.github.portalbff.model.*;
 
-import io.quarkiverse.flags.Flags;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,8 +32,8 @@ public class PortalBffController {
     @RestClient
     OulClient oulClient;
 
-    @Inject
-    Flags flags;
+    @ConfigProperty(name = "portal.mock.handlaggare", defaultValue = "false")
+    boolean mockHandlaggare;
 
     // Read REMOTES_CONFIG_PATH from the env, falls back to empty (uses bundled file)
     @ConfigProperty(name = "portal.remotes.config.path", defaultValue = "")
@@ -72,7 +70,7 @@ public class PortalBffController {
     @GET
     @Path("/handlaggare")
     public Response getHandlaggare() {
-        if (flags.isEnabled("mock-handlaggare")) {
+        if (mockHandlaggare) {
             HandlaggarId id1 = new HandlaggarId();
             id1.typId = "116759e4-18fd-4209-849c-90abbd257d22";
             id1.varde = "469ddd20-6796-4e05-9e18-6a95953f6cb3";
