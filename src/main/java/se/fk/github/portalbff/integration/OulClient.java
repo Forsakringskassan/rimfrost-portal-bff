@@ -11,19 +11,18 @@ import se.fk.github.portalbff.model.TasksRequest;
 @Path("/uppgifter/handlaggare")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public interface OulClient {
-    @GET
-    @Path("/{typId}/{varde}")
-    RawTaskBackendResponse getTasks(
-        @PathParam("typId") String typId,
-        @PathParam("varde") String varde
-    );
+public interface OulClient
+{
+   @GET
+   @Path("/{typId}/{varde}")
+   RawTaskBackendResponse getTasks(
+         @PathParam("typId") String typId,
+         @PathParam("varde") String varde);
 
-    @POST
-    @Path("/{typId}/{varde}")
-    RawGetNextBackendResponse assignTask(
-        @PathParam("typId") String typId,
-        @PathParam("varde") String varde,
-        TasksRequest body
-    );
+   @POST
+   @Path("/{typId}/{varde}")
+   RawGetNextBackendResponse assignTask(
+         @PathParam("typId") String typId,
+         @PathParam("varde") String varde,
+         TasksRequest body);
 }
