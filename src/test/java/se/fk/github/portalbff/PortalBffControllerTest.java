@@ -46,7 +46,7 @@ class PortalBffControllerTest {
 
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "type-1", "varde": "value-1"}""")
+            .body("{\"typId\": \"type-1\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks")
             .then()
@@ -62,11 +62,11 @@ class PortalBffControllerTest {
         WireMockTestResource.getServer().stubFor(get(urlMatching("/uppgifter/handlaggare/.*"))
             .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
-                .withBody("""{"operativa_uppgifter": null}""")));
+                .withBody("{\"operativa_uppgifter\": null}")));
 
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "type-1", "varde": "value-1"}""")
+            .body("{\"typId\": \"type-1\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks")
             .then()
@@ -78,7 +78,7 @@ class PortalBffControllerTest {
     void getTasks_returns400_whenTypIdIsBlank() {
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "", "varde": "value-1"}""")
+            .body("{\"typId\": \"\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks")
             .then()
@@ -89,7 +89,7 @@ class PortalBffControllerTest {
     void getTasks_returns400_whenVardeIsBlank() {
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "type-1", "varde": ""}""")
+            .body("{\"typId\": \"type-1\", \"varde\": \"\"}")
             .when()
             .post("/tasks")
             .then()
@@ -103,7 +103,7 @@ class PortalBffControllerTest {
 
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "type-1", "varde": "value-1"}""")
+            .body("{\"typId\": \"type-1\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks")
             .then()
@@ -136,7 +136,7 @@ class PortalBffControllerTest {
 
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "type-1", "varde": "value-1"}""")
+            .body("{\"typId\": \"type-1\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks/getNext")
             .then()
@@ -151,7 +151,7 @@ class PortalBffControllerTest {
     void getNextTask_returns400_whenTypIdIsBlank() {
         given()
             .contentType(ContentType.JSON)
-            .body("""{"typId": "", "varde": "value-1"}""")
+            .body("{\"typId\": \"\", \"varde\": \"value-1\"}")
             .when()
             .post("/tasks/getNext")
             .then()

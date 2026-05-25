@@ -39,6 +39,12 @@ public class PortalBffController {
     @ConfigProperty(name = "portal.remotes.config.path", defaultValue = "")
     Optional<String> remotesConfigPath;
 
+    @ConfigProperty(name = "portal.mock.handlaggare.id2.varde")
+    String mockHandlaggareId2Varde;
+
+    @ConfigProperty(name = "portal.mock.handlaggare.id3.varde")
+    String mockHandlaggareId3Varde;
+
     // GET /api/route-manifest
     // Reads remotes.json either from a mounted ConfigMap path (Kubernetes)
     // or falls back to the bundled file in src/main/resources
@@ -77,11 +83,11 @@ public class PortalBffController {
 
             HandlaggarId id2 = new HandlaggarId();
             id2.typId = "550e8400-e29b-41d4-a716-446655440001";
-            id2.varde = "19850601-5678";
+            id2.varde = mockHandlaggareId2Varde;
 
             HandlaggarId id3 = new HandlaggarId();
             id3.typId = "550e8400-e29b-41d4-a716-446655440002";
-            id3.varde = "19721115-9012";
+            id3.varde = mockHandlaggareId3Varde;
 
             Handlaggare h1 = new Handlaggare();
             h1.handlaggarId = id1;
