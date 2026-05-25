@@ -81,7 +81,7 @@ public class PortalBffController {
 
             HandlaggarId id3 = new HandlaggarId();
             id3.typId = "550e8400-e29b-41d4-a716-446655440002";
-            id3.varde = "19721115-9012";
+            id3.varde = "19721115-9011";
 
             Handlaggare h1 = new Handlaggare();
             h1.handlaggarId = id1;
