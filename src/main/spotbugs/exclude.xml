@@ -1,0 +1,7 @@
+<FindBugsFilter>
+  <!-- Public fields in model/DTO classes are read by Jackson via reflection, not visible to SpotBugs -->
+  <Match>
+    <Class name="~se\.fk\.github\.portalbff\.model\..*"/>
+    <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+  </Match>
+</FindBugsFilter>

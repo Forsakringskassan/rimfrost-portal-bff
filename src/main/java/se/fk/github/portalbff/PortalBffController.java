@@ -44,7 +44,7 @@ public class PortalBffController {
     // or falls back to the bundled file in src/main/resources
     @GET
     @Path("/api/route-manifest")
-    public Response RouteManifest() {
+    public Response routeManifest() {
         LOGGER.debug("GET /api/route-manifest");
         try {
             String json;
