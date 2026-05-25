@@ -25,8 +25,6 @@ The application runs on port **9001** by default (matches the old TypeScript BFF
 | `BE_OUL_URL` | `http://localhost:8889` | Base URL for the OUL backend |
 | `PORTAL_REMOTES_CONFIG_PATH` | _(classpath)_ | Path to a `remotes.json` override (e.g. a mounted ConfigMap in Kubernetes). Falls back to the bundled `src/main/resources/remotes.json`. |
 | `PORTAL_MOCK_HANDLAGGARE` | `true` | Enables the mock `GET /handlaggare` response. Set to `false` in environments where real handläggare data is available. |
-| `PORTAL_MOCK_HANDLAGGARE_ID2_VARDE` | — | `varde` for the second mock handläggare (required when mock is enabled). |
-| `PORTAL_MOCK_HANDLAGGARE_ID3_VARDE` | — | `varde` for the third mock handläggare (required when mock is enabled). |
 
 ## Packaging and running the application
 
