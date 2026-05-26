@@ -18,6 +18,12 @@ You can run your application in dev mode that enables live coding using:
 
 The application runs on port **9001** by default (matches the old TypeScript BFF).
 
+To run the full build locally (mirrors CI, skips Docker):
+
+```shell script
+./mvnw verify -Dquarkus.container-image.build=false
+```
+
 ## Environment variables
 
 | Variable | Default | Description |
@@ -88,7 +94,7 @@ If you want to learn more about building native executables, please consult <htt
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/route-manifest` | Returns `remotes.json` — the module federation remote registry. Reads from `PORTAL_REMOTES_CONFIG_PATH` if set, otherwise from the bundled classpath resource. |
-| `GET` | `/handlaggare` | Returns mock handläggare data. Requires the `mock-handlaggare` feature flag to be enabled. |
+| `GET` | `/handlaggare` | Returns mock handläggare data when `PORTAL_MOCK_HANDLAGGARE=true`, otherwise `503`. |
 | `POST` | `/tasks` | Fetches all operative tasks for a handläggare from OUL and transforms them to the portal model. |
 | `POST` | `/tasks/getNext` | Assigns the next available task to a handläggare via OUL and returns the transformed result. |
 

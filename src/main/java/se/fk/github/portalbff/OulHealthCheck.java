@@ -20,9 +20,10 @@ public class OulHealthCheck implements HealthCheck
    @Override
    public HealthCheckResponse call()
    {
+      HttpURLConnection connection = null;
       try
       {
-         HttpURLConnection connection = (HttpURLConnection) new URL(oulUrl).openConnection();
+         connection = (HttpURLConnection) new URL(oulUrl).openConnection();
          connection.setConnectTimeout(2000);
          connection.setReadTimeout(2000);
          connection.setRequestMethod("HEAD");
@@ -40,6 +41,13 @@ public class OulHealthCheck implements HealthCheck
          return HealthCheckResponse.named("oul-backend").down()
                .withData("error", e.getMessage())
                .build();
+      }
+      finally
+      {
+         if (connection != null)
+         {
+            connection.disconnect();
+         }
       }
    }
 }
