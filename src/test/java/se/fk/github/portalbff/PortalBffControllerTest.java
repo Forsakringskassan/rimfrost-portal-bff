@@ -117,7 +117,7 @@ class PortalBffControllerTest
             .post("/tasks")
             .then()
             .statusCode(500)
-            .body("error", equalTo("Internal server error"));
+            .body("error", equalTo("Upstream error"));
    }
 
    @Test
