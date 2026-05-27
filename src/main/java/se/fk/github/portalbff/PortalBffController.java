@@ -135,6 +135,11 @@ public class PortalBffController
          result.operativaUppgifter = transformed;
          return Response.ok(result).build();
       }
+      catch (WebApplicationException e)
+      {
+         LOGGER.error("Failed to fetch tasks for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
+      }
       catch (Exception e)
       {
          LOGGER.error("Failed to fetch tasks for typId={}", body.typId, e);
@@ -163,6 +168,11 @@ public class PortalBffController
          GetNextResponse result = new GetNextResponse();
          result.uppgift = transformed;
          return Response.ok(result).build();
+      }
+      catch (WebApplicationException e)
+      {
+         LOGGER.error("Failed to assign task for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
       catch (Exception e)
       {
