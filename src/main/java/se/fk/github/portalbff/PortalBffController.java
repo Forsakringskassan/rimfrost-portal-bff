@@ -140,6 +140,11 @@ public class PortalBffController
          LOGGER.error("Failed to fetch tasks for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
          return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to fetch tasks for typId={}, OUL unreachable", body.typId, e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
+      }
       catch (Exception e)
       {
          LOGGER.error("Failed to fetch tasks for typId={}", body.typId, e);
@@ -173,6 +178,11 @@ public class PortalBffController
       {
          LOGGER.error("Failed to assign task for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
          return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
+      }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to assign task for typId={}, OUL unreachable", body.typId, e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
       }
       catch (Exception e)
       {
