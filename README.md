@@ -1,174 +1,101 @@
-# Rimfrost Portal BFF
+# portal-bff
 
-Backend for Frontend (BFF) for portal task handling.
+Backend-for-frontend for the handläggare portal. Proxies task data from the OUL service, serves the remotes config for module federation, and exposes mock handläggare data behind a feature flag.
 
-The service exposes task-oriented endpoints used by the portal frontend and forwards requests to OUL backend services.
+This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
-## Features
+If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
-- Express API written in TypeScript
-- CORS enabled (`*`) with support for preflight (`OPTIONS`)
-- Health endpoint for runtime checks
-- Task fetch and task assignment endpoints
-- Response transformation from backend `operativa_uppgifter` to frontend-friendly shape
-- **Dynamic remote registry** — serves the micro-frontend manifest at `GET /api/route-manifest`, read from a file that can be a Kubernetes ConfigMap mount (no rebuild needed to add or update a remote)
+## Running the application in dev mode
 
-## Architecture
+You can run your application in dev mode that enables live coding using:
 
-Communication flow:
-
-```
-[Host FE] <-> [Portal BFF] <-> [OUL Backend]
+```shell script
+./mvnw compile quarkus:dev
 ```
 
-Current BFF responsibilities:
+> **_NOTE:_** Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:9001/q/dev/>.
 
-- Return tasks for a specific handlaggare
-- Assign next task for a specific handlaggare
-- Normalize task payload fields via `transformUppgift`
-- Serve the micro-frontend remote registry (`remotes.json`) so the portal can discover and load remotes at runtime without any rebuild
+The application runs on port **9001** by default (matches the old TypeScript BFF).
 
-## Prerequisites
+To run the full build locally (mirrors CI, skips Docker):
 
-- Node.js 20+
-- npm
-
-## Quick Start
-
-```bash
-npm install
-npm run dev
+```shell script
+./mvnw verify -Dquarkus.container-image.build=false
 ```
 
-The service starts on `http://localhost:9001`.
+## Environment variables
 
-## Scripts
-
-- `npm run dev` - Run with hot reload (`tsx --watch`) and `.env` loading
-- `npm run build` - Compile TypeScript to `dist/`
-- `npm run start` - Run compiled output (`dist/index.js`) with `.env`
-- `npm run type-check` - TypeScript check without emitting files
-- `npm run lint` - Lint source
-- `npm run lint:fix` - Auto-fix lint issues
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Verify formatting
-
-## Environment Variables
-
-Create `.env` in the project root:
-
-```env
-NODE_ENV=development
-BE_OUL_URL=http://localhost:8889
-```
-
-| Variable | Required | Description |
+| Variable | Default | Description |
 |---|---|---|
-| `BE_OUL_URL` | Yes | Base URL of the OUL backend. Used for task fetch and assignment calls. |
-| `REMOTES_CONFIG_PATH` | No | Path to the micro-frontend registry JSON file. Defaults to `remotes.json` next to `index.ts`. Set this to a Kubernetes ConfigMap volume mount path in production. |
+| `BE_OUL_URL` | `http://localhost:8889` | Base URL for the OUL backend |
+| `PORTAL_REMOTES_CONFIG_PATH` | _(classpath)_ | Path to a `remotes.json` override (e.g. a mounted ConfigMap in Kubernetes). Falls back to the bundled `src/main/resources/remotes.json`. |
+| `PORTAL_MOCK_HANDLAGGARE` | `true` | Enables the mock `GET /handlaggare` response. Set to `false` in environments where real handläggare data is available. |
 
-Notes:
+## Packaging and running the application
 
-- `BE_OUL_URL` is used for both task fetch and task assignment backend calls.
-- If `BE_OUL_URL` is missing, backend requests will fail due to invalid target URL.
+The application can be packaged using:
 
-## API
-
-### `GET /api/health`
-
-Returns service status.
-
-Example response:
-
-```json
-{
-    "status": "ok",
-    "timestamp": "2026-03-30T12:34:56.789Z"
-}
+```shell script
+./mvnw package
 ```
 
-### `GET /tasks/:handlaggarId`
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
+Be aware that it's not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
 
-Fetches tasks from:
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
 
-`{BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
+If you want to build an _über-jar_, execute the following command:
 
-Returns backend payload with `operativa_uppgifter` transformed through `utils/transformUppgift.ts`.
-
-Error handling:
-
-- `500` if backend call fails or returns non-OK status
-
-### `POST /tasks/getNext/:handlaggarId`
-
-Assigns next task via:
-
-`POST {BE_OUL_URL}/uppgifter/handlaggare/:handlaggarId`
-
-Forwards request body as JSON.
-
-Error handling:
-
-- `502` when backend responds with non-OK status
-- `500` on request/transport failures
-
-### `GET /api/route-manifest`
-
-Returns the micro-frontend remote registry used by the portal to discover and load remotes at runtime.
-
-The registry is read from disk on every request (no cache) so updates take effect immediately without a server restart.
-
-**Registry source** (first match wins):
-1. File at path specified by `REMOTES_CONFIG_PATH` env var (use for Kubernetes ConfigMap mount)
-2. `remotes.json` in the same directory as `index.ts` (default, used in local dev)
-
-**To add or update a remote** — edit `remotes.json` (dev) or update the ConfigMap (production). No rebuild of the portal or BFF is required.
-
-Example response:
-
-```json
-{
-  "routes": {
-    "rtf-manuell": {
-      "scope": "remoteApp",
-      "module": "VardAvHusdjur",
-      "devEntry": "http://localhost:3031/mf-manifest.json",
-      "prodEntry": "https://cdn.example.com/rtf-manuell/mf-manifest.json"
-    }
-  }
-}
+```shell script
+./mvnw package -Dquarkus.package.jar.type=uber-jar
 ```
 
-Each entry:
+The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
 
-| Field | Description |
-|---|---|
-| `scope` | Must match `federation({ name: ... })` in the remote's `vite.config.ts` |
-| `module` | Exposed component key without the leading `./` |
-| `devEntry` | URL to the remote's `mf-manifest.json` in development |
-| `prodEntry` | URL to the remote's `mf-manifest.json` in production |
+## Packaging and running as Docker
 
-Error handling:
+Build a Docker image _rimfrost/rimfrost-portal-bff:latest_:
 
-- `500` if the registry file is missing or cannot be parsed
-
-## Project Structure
-
-```
-rimfrost-portal-bff/
-|- index.ts
-|- remotes.json          # Micro-frontend registry (dev default; replaced by ConfigMap in production)
-|- utils/
-|  |- transformUppgift.ts
-|  |- checkTaskQualification.ts
-|  |- compareHandlerQualifications.ts
-|  |- fetchHandlerQualifications.ts
-|  |- validateAndReturnData.ts
-|- package.json
-|- tsconfig.json
+```shell script
+./mvnw clean package
 ```
 
-## Implementation Notes
+Launch container:
 
-- The active routes are implemented in `index.ts`.
-- The task qualification and fallback helper utilities exist in `utils/`, but are not currently wired into the active routes.
+```shell script
+docker run -p 9001:9001 \
+  -e BE_OUL_URL=http://host.docker.internal:8889 \
+  rimfrost/rimfrost-portal-bff
+```
+
+## Creating a native executable
+
+You can create a native executable using:
+
+```shell script
+./mvnw package -Dnative
+```
+
+Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+
+```shell script
+./mvnw package -Dnative -Dquarkus.native.container-build=true
+```
+
+You can then execute your native executable with: `./target/rimfrost-portal-bff-1.0.0-SNAPSHOT-runner`
+
+If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Provided Code
+
+### REST
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/route-manifest` | Returns `remotes.json` — the module federation remote registry. Reads from `PORTAL_REMOTES_CONFIG_PATH` if set, otherwise from the bundled classpath resource. |
+| `GET` | `/handlaggare` | Returns mock handläggare data when `PORTAL_MOCK_HANDLAGGARE=true`, otherwise `503`. |
+| `POST` | `/tasks` | Fetches all operative tasks for a handläggare from OUL and transforms them to the portal model. |
+| `POST` | `/tasks/getNext` | Assigns the next available task to a handläggare via OUL and returns the transformed result. |
+
+Health: <http://localhost:9001/q/health>
