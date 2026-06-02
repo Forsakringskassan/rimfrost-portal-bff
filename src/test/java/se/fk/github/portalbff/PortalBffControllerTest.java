@@ -56,10 +56,10 @@ class PortalBffControllerTest
             .post("/tasks")
             .then()
             .statusCode(200)
-            .body("operativaUppgifter", hasSize(1))
-            .body("operativaUppgifter[0].uppgiftId", equalTo("task-1"))
-            .body("operativaUppgifter[0].status", equalTo("AKTIV"))
-            .body("operativaUppgifter[0].planeradTill", equalTo("2024-02-01"));
+            .body("operativa_uppgifter", hasSize(1))
+            .body("operativa_uppgifter[0].uppgiftId", equalTo("task-1"))
+            .body("operativa_uppgifter[0].status", equalTo("AKTIV"))
+            .body("operativa_uppgifter[0].planeradTill", equalTo("2024-02-01"));
    }
 
    @Test
@@ -77,7 +77,7 @@ class PortalBffControllerTest
             .post("/tasks")
             .then()
             .statusCode(200)
-            .body("operativaUppgifter", empty());
+            .body("operativa_uppgifter", empty());
    }
 
    @Test
