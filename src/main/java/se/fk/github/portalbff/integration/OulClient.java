@@ -5,24 +5,27 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import se.fk.github.portalbff.model.RawTaskBackendResponse;
 import se.fk.github.portalbff.model.RawGetNextBackendResponse;
-import se.fk.github.portalbff.model.TasksRequest;
 
 @RegisterRestClient(configKey = "oul")
-@Path("/uppgifter/handlaggare")
+@Path("/uppgifter")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface OulClient
 {
    @GET
-   @Path("/{typId}/{varde}")
-   RawTaskBackendResponse getTasks(
-         @PathParam("typId") String typId,
-         @PathParam("varde") String varde);
+   @Path("/handlaggare")
+   RawTaskBackendResponse getTasks(@HeaderParam("Authorization") String authorization);
 
    @POST
-   @Path("/{typId}/{varde}")
-   RawGetNextBackendResponse assignTask(
-         @PathParam("typId") String typId,
-         @PathParam("varde") String varde,
-         TasksRequest body);
+   @Path("/handlaggare")
+   RawGetNextBackendResponse assignTask(@HeaderParam("Authorization") String authorization);
+
+   @GET
+   @Path("/team")
+   RawTaskBackendResponse getTeamTasks(@HeaderParam("Authorization") String authorization);
+
+   @POST
+   @Path("/{uppgift_id}/handlaggare")
+   RawGetNextBackendResponse reassignTask(@PathParam("uppgift_id") String uppgiftId,
+         @HeaderParam("Authorization") String authorization);
 }
