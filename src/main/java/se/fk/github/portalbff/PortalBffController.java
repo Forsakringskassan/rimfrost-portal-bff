@@ -29,6 +29,20 @@ public class PortalBffController
 
    private static final Logger LOGGER = LoggerFactory.getLogger(PortalBffController.class);
 
+   private static String readUpstreamBody(WebApplicationException e)
+   {
+      try
+      {
+         Response r = e.getResponse();
+         r.bufferEntity();
+         return r.readEntity(String.class);
+      }
+      catch (Exception ignored)
+      {
+         return "";
+      }
+   }
+
    @Inject
    @RestClient
    OulClient oulClient;
@@ -83,16 +97,16 @@ public class PortalBffController
       if (mockHandlaggare)
       {
          HandlaggarId id1 = new HandlaggarId();
-         id1.typId = "116759e4-18fd-4209-849c-90abbd257d22";
-         id1.varde = "469ddd20-6796-4e05-9e18-6a95953f6cb3";
+         id1.typId = "card";
+         id1.varde = "a1a1a1a1-0000-0000-0000-000000000001";
 
          HandlaggarId id2 = new HandlaggarId();
-         id2.typId = "550e8400-e29b-41d4-a716-446655440001";
-         id2.varde = "19850601-5678";
+         id2.typId = "card";
+         id2.varde = "a1a1a1a1-0000-0000-0000-000000000002";
 
          HandlaggarId id3 = new HandlaggarId();
-         id3.typId = "550e8400-e29b-41d4-a716-446655440002";
-         id3.varde = "19721115-9011";
+         id3.typId = "card";
+         id3.varde = "a1a1a1a1-0000-0000-0000-000000000003";
 
          Handlaggare h1 = new Handlaggare();
          h1.handlaggarId = id1;
@@ -121,12 +135,13 @@ public class PortalBffController
    // Fetches all tasks for a handler from OUL and transforms them
    @POST
    @Path("/tasks")
-   public Response getTasks(@Valid TasksRequest body)
+   public Response getTasks(@Valid TasksRequest body, @HeaderParam("Authorization") String authorization)
    {
       MDC.put("typId", body.typId);
+      LOGGER.info("POST /tasks - Authorization: {}", authorization != null ? "present, length=" + authorization.length() : "null");
       try
       {
-         RawTaskBackendResponse raw = oulClient.getTasks(body.typId, body.varde);
+         RawTaskBackendResponse raw = oulClient.getTasks(authorization);
          List<OperativUppgift> transformed = raw.operativaUppgifter == null
                ? List.of()
                : raw.operativaUppgifter.stream().map(UppgiftMapper::transform).toList();
@@ -137,8 +152,9 @@ public class PortalBffController
       }
       catch (WebApplicationException e)
       {
-         LOGGER.error("Failed to fetch tasks for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
+         String upstream = readUpstreamBody(e);
+         LOGGER.error("OUL returned {} for typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
       }
       catch (ProcessingException e)
       {
@@ -156,16 +172,51 @@ public class PortalBffController
       }
    }
 
-   // POST /tasks/getNext
-   // Assigns a new task to a handler from OUL and transforms the result
-   @POST
-   @Path("/tasks/getNext")
-   public Response getNextTask(@Valid TasksRequest body)
+   // GET /tasks/team
+   // Fetches all tasks assigned to the handler's team from OUL
+   @GET
+   @Path("/tasks/team")
+   public Response getTeamTasks(@HeaderParam("Authorization") String authorization)
    {
-      MDC.put("typId", body.typId);
       try
       {
-         RawGetNextBackendResponse raw = oulClient.assignTask(body.typId, body.varde, body);
+         RawTaskBackendResponse raw = oulClient.getTeamTasks(authorization);
+         List<OperativUppgift> transformed = raw.operativaUppgifter == null
+               ? List.of()
+               : raw.operativaUppgifter.stream().map(UppgiftMapper::transform).toList();
+
+         TasksResponse result = new TasksResponse();
+         result.operativaUppgifter = transformed;
+         return Response.ok(result).build();
+      }
+      catch (WebApplicationException e)
+      {
+         String upstream = readUpstreamBody(e);
+         LOGGER.error("OUL returned {} for team tasks: {}", e.getResponse().getStatus(), upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+      }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to fetch team tasks, OUL unreachable", e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
+      }
+      catch (Exception e)
+      {
+         LOGGER.error("Failed to fetch team tasks", e);
+         return Response.status(500).entity(Map.of("error", "Internal server error")).build();
+      }
+   }
+
+   // POST /tasks/{uppgiftId}/reassign
+   // Reassigns a task to the calling handler from OUL
+   @POST
+   @Path("/tasks/{uppgiftId}/reassign")
+   public Response reassignTask(@PathParam("uppgiftId") String uppgiftId, @HeaderParam("Authorization") String authorization)
+   {
+      MDC.put("uppgiftId", uppgiftId);
+      try
+      {
+         RawGetNextBackendResponse raw = oulClient.reassignTask(uppgiftId, authorization);
          OperativUppgift transformed = raw.operativUppgift != null
                ? UppgiftMapper.transform(raw.operativUppgift)
                : null;
@@ -176,8 +227,49 @@ public class PortalBffController
       }
       catch (WebApplicationException e)
       {
-         LOGGER.error("Failed to assign task for typId={}, upstream status={}", body.typId, e.getResponse().getStatus(), e);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
+         String upstream = readUpstreamBody(e);
+         LOGGER.error("OUL returned {} for reassign uppgiftId={}: {}", e.getResponse().getStatus(), uppgiftId, upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+      }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to reassign task uppgiftId={}, OUL unreachable", uppgiftId, e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
+      }
+      catch (Exception e)
+      {
+         LOGGER.error("Failed to reassign task uppgiftId={}", uppgiftId, e);
+         return Response.status(500).entity(Map.of("error", "Internal server error")).build();
+      }
+      finally
+      {
+         MDC.remove("uppgiftId");
+      }
+   }
+
+   // POST /tasks/getNext
+   // Assigns a new task to a handler from OUL and transforms the result
+   @POST
+   @Path("/tasks/getNext")
+   public Response getNextTask(@Valid TasksRequest body, @HeaderParam("Authorization") String authorization)
+   {
+      MDC.put("typId", body.typId);
+      try
+      {
+         RawGetNextBackendResponse raw = oulClient.assignTask(authorization);
+         OperativUppgift transformed = raw.operativUppgift != null
+               ? UppgiftMapper.transform(raw.operativUppgift)
+               : null;
+
+         GetNextResponse result = new GetNextResponse();
+         result.uppgift = transformed;
+         return Response.ok(result).build();
+      }
+      catch (WebApplicationException e)
+      {
+         String upstream = readUpstreamBody(e);
+         LOGGER.error("OUL returned {} for getNext typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
       }
       catch (ProcessingException e)
       {

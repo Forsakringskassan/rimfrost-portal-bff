@@ -26,7 +26,7 @@ class PortalBffControllerTest
    @Test
    void getTasks_returnsMappedTasks()
    {
-      WireMockTestResource.getServer().stubFor(get(urlMatching("/uppgifter/handlaggare/.*"))
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
                   .withBody("""
@@ -65,7 +65,7 @@ class PortalBffControllerTest
    @Test
    void getTasks_emptyList_whenOulReturnsNoTasks()
    {
-      WireMockTestResource.getServer().stubFor(get(urlMatching("/uppgifter/handlaggare/.*"))
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
                   .withBody("{\"operativa_uppgifter\": null}")));
@@ -107,7 +107,7 @@ class PortalBffControllerTest
    @Test
    void getTasks_returns500_whenOulFails()
    {
-      WireMockTestResource.getServer().stubFor(get(urlMatching("/uppgifter/handlaggare/.*"))
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
             .willReturn(aResponse().withStatus(500)));
 
       given()
@@ -123,7 +123,7 @@ class PortalBffControllerTest
    @Test
    void getNextTask_returnsMappedTask()
    {
-      WireMockTestResource.getServer().stubFor(post(urlMatching("/uppgifter/handlaggare/.*"))
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo("/uppgifter/handlaggare"))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
                   .withBody("""
