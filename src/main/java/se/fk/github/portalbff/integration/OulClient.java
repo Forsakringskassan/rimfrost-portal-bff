@@ -26,5 +26,6 @@ public interface OulClient
 
    @POST
    @Path("/{uppgift_id}/handlaggare")
-   RawGetNextBackendResponse reassignTask(@PathParam("uppgift_id") String uppgiftId, @HeaderParam("Authorization") String authorization);
+   RawGetNextBackendResponse reassignTask(@PathParam("uppgift_id") String uppgiftId,
+         @HeaderParam("Authorization") String authorization);
 }

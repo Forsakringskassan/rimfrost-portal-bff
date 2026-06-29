@@ -138,7 +138,8 @@ public class PortalBffController
    public Response getTasks(@Valid TasksRequest body, @HeaderParam("Authorization") String authorization)
    {
       MDC.put("typId", body.typId);
-      LOGGER.info("POST /tasks - Authorization: {}", authorization != null ? "present, length=" + authorization.length() : "null");
+      LOGGER.info("POST /tasks - Authorization: {}",
+            authorization != null ? "present, length=" + authorization.length() : "null");
       try
       {
          RawTaskBackendResponse raw = oulClient.getTasks(authorization);
@@ -154,7 +155,8 @@ public class PortalBffController
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
+               .build();
       }
       catch (ProcessingException e)
       {
@@ -193,7 +195,8 @@ public class PortalBffController
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for team tasks: {}", e.getResponse().getStatus(), upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
+               .build();
       }
       catch (ProcessingException e)
       {
@@ -229,7 +232,8 @@ public class PortalBffController
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for reassign uppgiftId={}: {}", e.getResponse().getStatus(), uppgiftId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
+               .build();
       }
       catch (ProcessingException e)
       {
@@ -269,7 +273,8 @@ public class PortalBffController
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for getNext typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream)).build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
+               .build();
       }
       catch (ProcessingException e)
       {
