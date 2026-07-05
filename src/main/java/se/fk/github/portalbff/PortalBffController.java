@@ -47,6 +47,9 @@ public class PortalBffController
    @RestClient
    OulClient oulClient;
 
+   @Inject
+   SidService sidService;
+
    @ConfigProperty(name = "portal.mock.handlaggare", defaultValue = "false")
    boolean mockHandlaggare;
 
@@ -145,7 +148,10 @@ public class PortalBffController
          RawTaskBackendResponse raw = oulClient.getTasks(authorization);
          List<OperativUppgift> transformed = raw.operativaUppgifter == null
                ? List.of()
-               : raw.operativaUppgifter.stream().map(UppgiftMapper::transform).toList();
+               : raw.operativaUppgifter.stream()
+                     .filter(u -> !sidService.hasSid(u.individer))
+                     .map(UppgiftMapper::transform)
+                     .toList();
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
@@ -185,7 +191,10 @@ public class PortalBffController
          RawTaskBackendResponse raw = oulClient.getTeamTasks(authorization);
          List<OperativUppgift> transformed = raw.operativaUppgifter == null
                ? List.of()
-               : raw.operativaUppgifter.stream().map(UppgiftMapper::transform).toList();
+               : raw.operativaUppgifter.stream()
+                     .filter(u -> !sidService.hasSid(u.individer))
+                     .map(UppgiftMapper::transform)
+                     .toList();
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
@@ -220,6 +229,11 @@ public class PortalBffController
       try
       {
          RawGetNextBackendResponse raw = oulClient.reassignTask(uppgiftId, authorization);
+         if (raw.operativUppgift != null && sidService.hasSid(raw.operativUppgift.individer))
+         {
+            LOGGER.warn("Reassigned task has SID individ, denying access");
+            return Response.status(403).build();
+         }
          OperativUppgift transformed = raw.operativUppgift != null
                ? UppgiftMapper.transform(raw.operativUppgift)
                : null;
@@ -261,6 +275,11 @@ public class PortalBffController
       try
       {
          RawGetNextBackendResponse raw = oulClient.assignTask(authorization);
+         if (raw.operativUppgift != null && sidService.hasSid(raw.operativUppgift.individer))
+         {
+            LOGGER.warn("Assigned task has SID individ, denying access");
+            return Response.status(403).build();
+         }
          OperativUppgift transformed = raw.operativUppgift != null
                ? UppgiftMapper.transform(raw.operativUppgift)
                : null;
