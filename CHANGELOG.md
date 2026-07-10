@@ -2,6 +2,16 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.0.0 (2026-07-10)
+
+### Breaking changes
+
+-  release 1.1 ([d23ed](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/d23ed1949e7f409) julolsso)  
+
+### Features
+
+-  release 1.1 ([d23ed](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/d23ed1949e7f409) julolsso)  
+
 ## 1.0.0 (2026-06-16)
 
 ### Breaking changes
