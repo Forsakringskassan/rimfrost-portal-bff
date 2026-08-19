@@ -12,6 +12,7 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 |---|---|
 | Handläggarportalen (värdapplikation) | Anropar BFF:n för att lista, tilldela och hämta uppgifter samt för att läsa module federation-registret |
 | Operativt Uppgiftslager (OUL) | Uppströmstjänst som äger uppgiftsdata och tilldelning av handläggare |
+| SID-tjänsten | Uppströmstjänst som avgör om en eller flera individer har skyddad identitet |
 | Handläggare | Slutanvändare i portalen vars uppgiftslista och tilldelningar denna BFF förmedlar |
 
 ---
@@ -57,6 +58,16 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 - **PBFF-FR-04.3** Oväntade fel som inte kan hänföras till OUL-integrationen ska resultera i ett
   generellt felsvar utan att exponera intern feldetalj till klienten.
 
+### PBFF-FR-05 — Kontroll av skyddad identitet (SID)
+
+- **PBFF-FR-05.1** BFF:n ska kunna vidarebefordra en lista av individer till SID-tjänsten och
+  returnera en samlad indikator för om någon av dem har skyddad identitet.
+- **PBFF-FR-05.2** Om SID-tjänsten svarar med ett felstatus ska BFF:n vidarebefordra samma
+  HTTP-statuskod till anropande klient tillsammans med diagnostisk information om felet.
+- **PBFF-FR-05.3** Om SID-tjänsten inte går att nå ska BFF:n särskilja detta från ett
+  SID-svarat fel och returnera en statuskod som tydligt anger att uppströmstjänsten är
+  otillgänglig.
+
 ---
 
 ## Icke-funktionella krav
@@ -64,7 +75,7 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 ### PBFF-NFR-01 — Observerbarhet
 
 - **PBFF-NFR-01.1** BFF:n ska exponera hälsokontroller som speglar dess egen status samt
-  tillgängligheten hos OUL.
+  tillgängligheten hos OUL och SID-tjänsten.
 - **PBFF-NFR-01.2** Relevanta identifierare (t.ex. handläggar- och uppgifts-id) ska ingå i
   loggkontext för att möjliggöra spårning av enskilda anrop genom systemet.
 
@@ -89,3 +100,11 @@ Portal BFF är en ren synkron REST-till-REST-integration mot OUL. Den lagrar ing
 själv — all uppgifts- och tilldelningsdata ägs och persisteras av OUL. BFF:ns ansvar är
 begränsat till formatöversättning, felhanteringskonsekvens och att förmedla anropande
 handläggares identitet vidare.
+
+---
+
+## Integration med SID
+
+Portal BFF vidarebefordrar en lista av individer till SID-tjänsten och returnerar dess svar
+oförändrat till anropande klient. BFF:n lagrar inget tillstånd kring SID-kontrollen och gör
+ingen egen tolkning av resultatet utöver felhanteringskonsekvens.
