@@ -22,9 +22,7 @@ public class WireMockTestResource implements QuarkusTestResourceLifecycleManager
    {
       server = new WireMockServer(wireMockConfig().dynamicPort());
       server.start();
-      return Map.of(
-            "quarkus.rest-client.oul.url", server.baseUrl(),
-            "quarkus.rest-client.sid.url", server.baseUrl());
+      return Map.of("quarkus.rest-client.oul.url", server.baseUrl());
    }
 
    @Override

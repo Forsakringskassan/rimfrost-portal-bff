@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import se.fk.github.portalbff.integration.OulClient;
-import se.fk.github.portalbff.integration.SidClient;
 import se.fk.github.portalbff.model.*;
 
 import java.io.IOException;
@@ -47,10 +46,6 @@ public class PortalBffController
    @Inject
    @RestClient
    OulClient oulClient;
-
-   @Inject
-   @RestClient
-   SidClient sidClient;
 
    @ConfigProperty(name = "portal.mock.handlaggare", defaultValue = "false")
    boolean mockHandlaggare;
@@ -253,36 +248,6 @@ public class PortalBffController
       finally
       {
          MDC.remove("uppgiftId");
-      }
-   }
-
-   // POST /sid/status
-   // Forwards a list of individer to the SID service and returns whether any of them has protected identity
-   @POST
-   @Path("/sid/status")
-   public Response getSidStatus(@Valid SidStatusRequest body)
-   {
-      try
-      {
-         SidStatusResponse result = sidClient.getSidStatus(body);
-         return Response.ok(result).build();
-      }
-      catch (WebApplicationException e)
-      {
-         String upstream = readUpstreamBody(e);
-         LOGGER.error("SID returned {}: {}", e.getResponse().getStatus(), upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
-               .build();
-      }
-      catch (ProcessingException e)
-      {
-         LOGGER.error("Failed to fetch SID status, SID unreachable", e);
-         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
-      }
-      catch (Exception e)
-      {
-         LOGGER.error("Failed to fetch SID status", e);
-         return Response.status(500).entity(Map.of("error", "Internal server error")).build();
       }
    }
 
