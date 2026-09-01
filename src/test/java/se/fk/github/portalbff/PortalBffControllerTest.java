@@ -45,7 +45,8 @@ class PortalBffControllerTest
                                     "roll": "HANDLAGGARE",
                                     "url": "http://example.com/task/1"
                                 }
-                            ]
+                            ],
+                            "borttagna_pga_behorighet": 2
                         }
                         """)));
 
@@ -59,7 +60,8 @@ class PortalBffControllerTest
             .body("operativa_uppgifter", hasSize(1))
             .body("operativa_uppgifter[0].uppgiftId", equalTo("task-1"))
             .body("operativa_uppgifter[0].status", equalTo("AKTIV"))
-            .body("operativa_uppgifter[0].planeradTill", equalTo("2024-02-01"));
+            .body("operativa_uppgifter[0].planeradTill", equalTo("2024-02-01"))
+            .body("borttagna_pga_behorighet", equalTo(2));
    }
 
    @Test
@@ -68,7 +70,7 @@ class PortalBffControllerTest
       WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
-                  .withBody("{\"operativa_uppgifter\": null}")));
+                  .withBody("{\"operativa_uppgifter\": null, \"borttagna_pga_behorighet\": 0}")));
 
       given()
             .contentType(ContentType.JSON)
@@ -77,6 +79,7 @@ class PortalBffControllerTest
             .post("/tasks")
             .then()
             .statusCode(200)
+            .body("borttagna_pga_behorighet", equalTo(0))
             .body("operativa_uppgifter", empty());
    }
 
@@ -118,6 +121,27 @@ class PortalBffControllerTest
             .then()
             .statusCode(500)
             .body("error", equalTo("Upstream error"));
+   }
+
+   @Test
+   void getTeamTasks_forwardsBorttagnaPgaBehorighetUnchanged()
+   {
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/team"))
+            .willReturn(aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withBody("""
+                        {
+                            "operativa_uppgifter": [],
+                            "borttagna_pga_behorighet": 3
+                        }
+                        """)));
+
+      given()
+            .when()
+            .get("/tasks/team")
+            .then()
+            .statusCode(200)
+            .body("borttagna_pga_behorighet", equalTo(3));
    }
 
    @Test

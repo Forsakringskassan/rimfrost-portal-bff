@@ -30,6 +30,13 @@ kontrollerklassen i denna tjänst.
 | POST | `/tasks/{uppgiftId}/reassign` | Tilldela angiven uppgift till anropande handläggare |
 | POST | `/tasks/getNext` | Tilldela nästa tillgängliga uppgift |
 
+### Vidarebefordran av behörighetssignaler
+
+OUL:s svar för `/tasks` och `/tasks/team` innehåller fältet `borttagna_pga_behorighet` — antal
+uppgifter som togs bort ur listan för att de blivit SID-märkta och handläggaren saknar
+SID-behörighet. BFF:n vidarebefordrar fältet oförändrat i sitt eget svar utan egen tolkning;
+ingen SID- eller behörighetslogik finns i denna tjänst.
+
 ## Kafka-integration
 
 Ingen. Tjänsten har ingen meddelandeintegration.

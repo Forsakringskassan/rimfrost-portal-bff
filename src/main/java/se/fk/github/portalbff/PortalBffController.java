@@ -149,6 +149,7 @@ public class PortalBffController
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
+         result.borttagnaPgaBehorighet = raw.borttagnaPgaBehorighet;
          return Response.ok(result).build();
       }
       catch (WebApplicationException e)
@@ -189,6 +190,7 @@ public class PortalBffController
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
+         result.borttagnaPgaBehorighet = raw.borttagnaPgaBehorighet;
          return Response.ok(result).build();
       }
       catch (WebApplicationException e)
