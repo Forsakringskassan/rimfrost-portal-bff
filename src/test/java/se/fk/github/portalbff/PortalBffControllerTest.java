@@ -10,7 +10,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 @QuarkusTest
 @QuarkusTestResource(WireMockTestResource.class)
@@ -96,18 +98,6 @@ class PortalBffControllerTest
    }
 
    @Test
-   void getTasks_returns400_whenVardeIsBlank()
-   {
-      given()
-            .contentType(ContentType.JSON)
-            .body("{\"typId\": \"type-1\", \"varde\": \"\"}")
-            .when()
-            .post("/tasks")
-            .then()
-            .statusCode(400);
-   }
-
-   @Test
    void getTasks_returns500_whenOulFails()
    {
       WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
@@ -120,7 +110,25 @@ class PortalBffControllerTest
             .post("/tasks")
             .then()
             .statusCode(500)
-            .body("error", equalTo("Upstream error"));
+            .body("error", equalTo("Upstream error"))
+            .body("$", not(hasKey("upstream")));
+   }
+
+   @Test
+   void getTasks_acceptsMissingVarde()
+   {
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
+            .willReturn(aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withBody("{\"operativa_uppgifter\": null, \"borttagna_pga_behorighet\": 0}")));
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"typId\": \"type-1\"}")
+            .when()
+            .post("/tasks")
+            .then()
+            .statusCode(200);
    }
 
    @Test
@@ -142,6 +150,56 @@ class PortalBffControllerTest
             .then()
             .statusCode(200)
             .body("borttagna_pga_behorighet", equalTo(3));
+   }
+
+   @Test
+   void reassignTask_returnsMappedTask()
+   {
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+            .willReturn(aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withBody("""
+                        {
+                            "operativ_uppgift": {
+                                "uppgift_id": "uppgift-1",
+                                "handlaggning_id": "handling-3",
+                                "skapad": "2024-01-03",
+                                "status": "TILLDELAD",
+                                "planerad_till": null,
+                                "utford": null,
+                                "regel": "REGEL_C",
+                                "beskrivning": "Reassigned task",
+                                "verksamhetslogik": "VL",
+                                "roll": "HANDLAGGARE",
+                                "url": "http://example.com/task/3"
+                            }
+                        }
+                        """)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .when()
+            .post("/tasks/uppgift-1/reassign")
+            .then()
+            .statusCode(200)
+            .body("uppgift.uppgiftId", equalTo("uppgift-1"))
+            .body("uppgift.status", equalTo("TILLDELAD"));
+   }
+
+   @Test
+   void reassignTask_returns403_whenOulRejects()
+   {
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+            .willReturn(aResponse().withStatus(403)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .when()
+            .post("/tasks/uppgift-1/reassign")
+            .then()
+            .statusCode(403)
+            .body("error", equalTo("Upstream error"))
+            .body("$", not(hasKey("upstream")));
    }
 
    @Test
