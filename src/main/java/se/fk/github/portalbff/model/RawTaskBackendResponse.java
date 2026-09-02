@@ -7,4 +7,7 @@ public class RawTaskBackendResponse
 {
    @JsonProperty("operativa_uppgifter")
    public List<RawOperativUppgift> operativaUppgifter;
+
+   @JsonProperty("borttagna_pga_behorighet")
+   public int borttagnaPgaBehorighet;
 }
