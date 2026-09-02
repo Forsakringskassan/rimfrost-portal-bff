@@ -137,9 +137,7 @@ public class PortalBffController
    @Path("/tasks")
    public Response getTasks(@Valid TasksRequest body, @HeaderParam("Authorization") String authorization)
    {
-      MDC.put("typId", body.typId);
-      LOGGER.info("POST /tasks - Authorization: {}",
-            authorization != null ? "present, length=" + authorization.length() : "null");
+      MDC.put("clientTypId", body.typId);
       try
       {
          RawTaskBackendResponse raw = oulClient.getTasks(authorization);
@@ -149,28 +147,28 @@ public class PortalBffController
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
+         result.borttagnaPgaBehorighet = raw.borttagnaPgaBehorighet;
          return Response.ok(result).build();
       }
       catch (WebApplicationException e)
       {
          String upstream = readUpstreamBody(e);
-         LOGGER.error("OUL returned {} for typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
-               .build();
+         LOGGER.error("OUL returned {} for clientTypId={} (unverified): {}", e.getResponse().getStatus(), body.typId, upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
       catch (ProcessingException e)
       {
-         LOGGER.error("Failed to fetch tasks for typId={}, OUL unreachable", body.typId, e);
+         LOGGER.error("Failed to fetch tasks for clientTypId={} (unverified), OUL unreachable", body.typId, e);
          return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
       }
       catch (Exception e)
       {
-         LOGGER.error("Failed to fetch tasks for typId={}", body.typId, e);
+         LOGGER.error("Failed to fetch tasks for clientTypId={} (unverified)", body.typId, e);
          return Response.status(500).entity(Map.of("error", "Internal server error")).build();
       }
       finally
       {
-         MDC.remove("typId");
+         MDC.remove("clientTypId");
       }
    }
 
@@ -189,14 +187,14 @@ public class PortalBffController
 
          TasksResponse result = new TasksResponse();
          result.operativaUppgifter = transformed;
+         result.borttagnaPgaBehorighet = raw.borttagnaPgaBehorighet;
          return Response.ok(result).build();
       }
       catch (WebApplicationException e)
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for team tasks: {}", e.getResponse().getStatus(), upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
-               .build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
       catch (ProcessingException e)
       {
@@ -232,8 +230,7 @@ public class PortalBffController
       {
          String upstream = readUpstreamBody(e);
          LOGGER.error("OUL returned {} for reassign uppgiftId={}: {}", e.getResponse().getStatus(), uppgiftId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
-               .build();
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
       catch (ProcessingException e)
       {
@@ -257,7 +254,7 @@ public class PortalBffController
    @Path("/tasks/getNext")
    public Response getNextTask(@Valid TasksRequest body, @HeaderParam("Authorization") String authorization)
    {
-      MDC.put("typId", body.typId);
+      MDC.put("clientTypId", body.typId);
       try
       {
          RawGetNextBackendResponse raw = oulClient.assignTask(authorization);
@@ -272,23 +269,23 @@ public class PortalBffController
       catch (WebApplicationException e)
       {
          String upstream = readUpstreamBody(e);
-         LOGGER.error("OUL returned {} for getNext typId={}: {}", e.getResponse().getStatus(), body.typId, upstream);
-         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error", "upstream", upstream))
-               .build();
+         LOGGER.error("OUL returned {} for getNext clientTypId={} (unverified): {}", e.getResponse().getStatus(), body.typId,
+               upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
       }
       catch (ProcessingException e)
       {
-         LOGGER.error("Failed to assign task for typId={}, OUL unreachable", body.typId, e);
+         LOGGER.error("Failed to assign task for clientTypId={} (unverified), OUL unreachable", body.typId, e);
          return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
       }
       catch (Exception e)
       {
-         LOGGER.error("Failed to assign task for typId={}", body.typId, e);
+         LOGGER.error("Failed to assign task for clientTypId={} (unverified)", body.typId, e);
          return Response.status(500).entity(Map.of("error", "Internal server error")).build();
       }
       finally
       {
-         MDC.remove("typId");
+         MDC.remove("clientTypId");
       }
    }
 }

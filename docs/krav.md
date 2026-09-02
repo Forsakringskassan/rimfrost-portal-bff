@@ -47,6 +47,10 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 - **PBFF-FR-03.5** Uppgiftsdata från OUL ska normaliseras till ett konsekvent, frontend-vänligt
   format innan det returneras, inklusive att alltid returnera tomma listor istället för utelämnat
   värde när OUL inte har några uppgifter att lämna.
+- **PBFF-FR-03.6** Om OUL:s svar för `/tasks` eller `/tasks/team` innehåller en signal om att en
+  eller flera uppgifter tagits bort ur listan (t.ex. på grund av bristande SID-behörighet) ska
+  BFF:n vidarebefordra signalen oförändrad till klienten. BFF:n gör ingen egen bedömning av
+  SID-status eller behörighet — den logiken äger OUL uteslutande.
 
 ### PBFF-FR-04 — Felhantering vid integration mot OUL
 

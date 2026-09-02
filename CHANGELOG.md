@@ -2,6 +2,36 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.0.0 (2026-07-10)
+
+### Breaking changes
+
+-  release 1.1 ([d23ed](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/d23ed1949e7f409) julolsso)  
+
+### Features
+
+-  release 1.1 ([d23ed](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/d23ed1949e7f409) julolsso)  
+
+## 1.0.0 (2026-06-16)
+
+### Breaking changes
+
+-  release 1.1.0 ([e1bbf](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/e1bbfc9ecfd7250) LisaWedin_Ductus)  
+-  release 1.1.0 ([b3659](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/b365976e3901528) LisaWedin_Ductus)  
+
+### Features
+
+-  release 1.1.0 ([e1bbf](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/e1bbfc9ecfd7250) LisaWedin_Ductus)  
+-  release 1.1.0 ([b3659](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/b365976e3901528) LisaWedin_Ductus)  
+
+### Other changes
+
+**Merge branch 'main' of https://github.com/Forsakringskassan/rimfrost-portal-bff**
+
+
+[b3297](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/b329737640a61d5) LisaWedin_Ductus *2026-06-16 06:54:48*
+
+
 ## 0.0.1 (2026-06-15)
 
 ### Features

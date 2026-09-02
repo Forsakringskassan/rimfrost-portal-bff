@@ -30,6 +30,22 @@ kontrollerklassen i denna tjänst.
 | POST | `/tasks/{uppgiftId}/reassign` | Tilldela angiven uppgift till anropande handläggare |
 | POST | `/tasks/getNext` | Tilldela nästa tillgängliga uppgift |
 
+### Vidarebefordran av behörighetssignaler
+
+OUL:s svar för `/tasks` och `/tasks/team` innehåller fältet `borttagna_pga_behorighet` — antal
+uppgifter som togs bort ur listan för att de blivit SID-märkta och handläggaren saknar
+SID-behörighet. BFF:n vidarebefordrar fältet oförändrat i sitt eget svar utan egen tolkning;
+ingen SID- eller behörighetslogik finns i denna tjänst.
+
+### `typId`/`varde` i förfrågningskroppen (`/tasks`, `/tasks/getNext`)
+
+Sedan auktoriseringsuppgifter infördes avgörs vems data OUL returnerar uteslutande av
+`Authorization`-headern — `typId`/`varde` i förfrågningskroppen skickas inte längre vidare till
+OUL. `typId` finns kvar, men enbart som klient-uppgiven kontext för loggkorrelation; den är
+inte verifierad och loggas uttryckligen som sådan (`clientTypId=... (unverified)`), aldrig som
+anropande handläggares faktiska identitet. `varde` är helt borttaget ur kontraktet, eftersom
+det inte lästes någonstans (Jackson ignorerar tyst fältet om en klient ändå skickar det).
+
 ## Kafka-integration
 
 Ingen. Tjänsten har ingen meddelandeintegration.
@@ -50,7 +66,6 @@ Ingen. Tjänsten har ingen meddelandeintegration.
 
 | Begränsning | Föreslagen åtgärd |
 |---|---|
-| `typId`/`varde` i förfrågningskroppen till `/tasks` och `/tasks/getNext` skickas inte längre vidare till OUL sedan auktoriseringsuppgifter infördes | Ta bort fälten från kontraktet eller dokumentera dem som enbart avsedda för loggning |
 | Mockflaggans standardvärde skiljer sig mellan miljökonfiguration och kod | Enhetliggör standardvärdet för `portal.mock.handlaggare` |
 | Felsvar saknar ett gemensamt, typat schema | Inför en enhetlig felresponsmodell |
 | Ingen paginering på `/tasks` eller `/tasks/team` | Bedöm behov när uppgiftsvolymen växer |
