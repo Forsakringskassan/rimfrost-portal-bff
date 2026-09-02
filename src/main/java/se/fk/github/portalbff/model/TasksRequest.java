@@ -9,7 +9,4 @@ public class TasksRequest
    // be logged as unverified/client-supplied, never treated as the caller's actual identity.
    @NotBlank
    public String typId;
-
-   // No longer read anywhere; kept optional so existing clients that still send it aren't broken.
-   public String varde;
 }

@@ -43,8 +43,8 @@ Sedan auktoriseringsuppgifter infördes avgörs vems data OUL returnerar uteslut
 `Authorization`-headern — `typId`/`varde` i förfrågningskroppen skickas inte längre vidare till
 OUL. `typId` finns kvar, men enbart som klient-uppgiven kontext för loggkorrelation; den är
 inte verifierad och loggas uttryckligen som sådan (`clientTypId=... (unverified)`), aldrig som
-anropande handläggares faktiska identitet. `varde` läses inte längre någonstans och är därför
-inte längre obligatoriskt.
+anropande handläggares faktiska identitet. `varde` är helt borttaget ur kontraktet, eftersom
+det inte lästes någonstans (Jackson ignorerar tyst fältet om en klient ändå skickar det).
 
 ## Kafka-integration
 
