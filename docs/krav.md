@@ -51,6 +51,9 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
   eller flera uppgifter tagits bort ur listan (t.ex. på grund av bristande SID-behörighet) ska
   BFF:n vidarebefordra signalen oförändrad till klienten. BFF:n gör ingen egen bedömning av
   SID-status eller behörighet — den logiken äger OUL uteslutande.
+- **PBFF-FR-03.7** BFF:n ska kunna avtilldela (lämna tillbaka) en uppgift åt anropande
+  handläggare via `POST /tasks/{uppgiftId}/unassign`, vidarebefordrat oförändrat till OUL:s
+  motsvarande handläggarvända endpoint utan egen logik.
 
 ### PBFF-FR-04 — Felhantering vid integration mot OUL
 
