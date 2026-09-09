@@ -28,4 +28,9 @@ public interface OulClient
    @Path("/{uppgift_id}/handlaggare")
    RawGetNextBackendResponse reassignTask(@PathParam("uppgift_id") String uppgiftId,
          @HeaderParam("Authorization") String authorization);
+
+   @DELETE
+   @Path("/{uppgift_id}/handlaggare")
+   void unassignTask(@PathParam("uppgift_id") String uppgiftId,
+         @HeaderParam("Authorization") String authorization);
 }

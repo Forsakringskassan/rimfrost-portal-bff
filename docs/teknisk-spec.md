@@ -28,6 +28,7 @@ kontrollerklassen i denna tjänst.
 | POST | `/tasks` | Uppgifter tilldelade anropande handläggare |
 | GET | `/tasks/team` | Uppgifter tilldelade anropande handläggares team |
 | POST | `/tasks/{uppgiftId}/reassign` | Tilldela angiven uppgift till anropande handläggare |
+| POST | `/tasks/{uppgiftId}/unassign` | Låt anropande handläggare lämna tillbaka angiven uppgift |
 | POST | `/tasks/getNext` | Tilldela nästa tillgängliga uppgift |
 
 ### Vidarebefordran av behörighetssignaler

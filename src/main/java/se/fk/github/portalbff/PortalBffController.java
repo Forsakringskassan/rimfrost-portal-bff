@@ -248,6 +248,43 @@ public class PortalBffController
       }
    }
 
+   // POST /tasks/{uppgiftId}/unassign
+   // Lets the calling handler hand a task back to the pool (OUL-FR-19).
+   // Pure forwarding: OUL owns the check that the caller is the current assignee.
+   @POST
+   @Path("/tasks/{uppgiftId}/unassign")
+   public Response unassignTask(@PathParam("uppgiftId") String uppgiftId,
+         @HeaderParam("Authorization") String authorization)
+   {
+      MDC.put("uppgiftId", uppgiftId);
+      try
+      {
+         oulClient.unassignTask(uppgiftId, authorization);
+         return Response.noContent().build();
+      }
+      catch (WebApplicationException e)
+      {
+         String upstream = readUpstreamBody(e);
+         LOGGER.error("OUL returned {} for unassign uppgiftId={}: {}", e.getResponse().getStatus(), uppgiftId,
+               upstream);
+         return Response.status(e.getResponse().getStatus()).entity(Map.of("error", "Upstream error")).build();
+      }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to unassign task uppgiftId={}, OUL unreachable", uppgiftId, e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
+      }
+      catch (Exception e)
+      {
+         LOGGER.error("Failed to unassign task uppgiftId={}", uppgiftId, e);
+         return Response.status(500).entity(Map.of("error", "Internal server error")).build();
+      }
+      finally
+      {
+         MDC.remove("uppgiftId");
+      }
+   }
+
    // POST /tasks/getNext
    // Assigns a new task to a handler from OUL and transforms the result
    @POST

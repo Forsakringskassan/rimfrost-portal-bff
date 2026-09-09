@@ -1,5 +1,6 @@
 package se.fk.github.portalbff;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -200,6 +201,70 @@ class PortalBffControllerTest
             .statusCode(403)
             .body("error", equalTo("Upstream error"))
             .body("$", not(hasKey("upstream")));
+   }
+
+   @Test
+   void unassignTask_returns204_whenOulAccepts()
+   {
+      WireMockTestResource.getServer().stubFor(delete(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+            .willReturn(aResponse().withStatus(204)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer test-token")
+            .when()
+            .post("/tasks/uppgift-1/unassign")
+            .then()
+            .statusCode(204);
+
+      // OUL derives the handläggare's identity from this token and uses it to check
+      // ownership (OUL-FR-19.2, 19.3), so forwarding it is the point of the endpoint.
+      WireMockTestResource.getServer().verify(
+            deleteRequestedFor(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+                  .withHeader("Authorization", WireMock.equalTo("Bearer test-token")));
+   }
+
+   @Test
+   void unassignTask_returns403_whenCallerIsNotAssignee()
+   {
+      WireMockTestResource.getServer().stubFor(delete(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+            .willReturn(aResponse().withStatus(403)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer other-handlaggare")
+            .when()
+            .post("/tasks/uppgift-1/unassign")
+            .then()
+            .statusCode(403)
+            .body("error", equalTo("Upstream error"))
+            .body("$", not(hasKey("upstream")));
+
+      // The token has to reach OUL on the error path too — that is what lets OUL
+      // decide the caller is not the assignee and answer 403 (OUL-FR-19.3).
+      WireMockTestResource.getServer().verify(
+            deleteRequestedFor(urlPathEqualTo("/uppgifter/uppgift-1/handlaggare"))
+                  .withHeader("Authorization", WireMock.equalTo("Bearer other-handlaggare")));
+   }
+
+   @Test
+   void unassignTask_returns404_whenUppgiftDoesNotExist()
+   {
+      WireMockTestResource.getServer().stubFor(delete(urlPathEqualTo("/uppgifter/saknas/handlaggare"))
+            .willReturn(aResponse().withStatus(404)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .when()
+            .post("/tasks/saknas/unassign")
+            .then()
+            .statusCode(404)
+            .body("error", equalTo("Upstream error"));
+
+      // WireMock answers 404 for any unmatched request, so without this the test would
+      // also pass if the client used the wrong verb or path.
+      WireMockTestResource.getServer().verify(
+            deleteRequestedFor(urlPathEqualTo("/uppgifter/saknas/handlaggare")));
    }
 
    @Test
