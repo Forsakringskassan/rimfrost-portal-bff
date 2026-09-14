@@ -2,6 +2,33 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.1.0 (2026-09-09)
+
+### Features
+
+-  forward self-service unassign to OUL ([0b62e](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/0b62e8853af7cbd) julolsso)  
+-  forward borttagna_pga_behorighet from OUL unchanged ([9f1be](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/9f1be7fe797db7d) LisaWedin_Ductus)  
+-  adds sid check with new service on opening new task ([1c6eb](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/1c6ebf49667fa2d) LisaWedin_Ductus)  
+-  adds krav docs ([31f19](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/31f19db831da44e) LisaWedin_Ductus)  
+-  adds backend token changes ([32ddb](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/32ddb03f2c1cc8a) LisaWedin_Ductus)  
+
+### Bug Fixes
+
+-  remove dead TasksRequest.varde field entirely ([249e9](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/249e9abcbe12660) LisaWedin_Ductus)  
+-  stop leaking upstream error bodies, clarify unverified typId ([b088d](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/b088de536a00871) LisaWedin_Ductus)  
+-  spotless ([df339](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/df3395e0d424d3c) LisaWedin_Ductus)  
+
+### Dependency updates
+
+- pin forsakringskassan/.github action to d1349e6 ([fb0bd](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/fb0bd4e834738a2) renovate[bot])  
+### Other changes
+
+**Merge remote-tracking branch 'origin/main' into revert/FKPOC-923-implementera-sid**
+
+
+[ec8ae](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/ec8ae76463a1735) LisaWedin_Ductus *2026-09-01 07:05:54*
+
+
 ## 2.0.0 (2026-07-10)
 
 ### Breaking changes
