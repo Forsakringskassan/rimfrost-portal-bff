@@ -2,6 +2,14 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.1.1 (2026-09-15)
+
+### Bug Fixes
+
+-  actually make CORS origins configurable via CORS_ORIGINS ([c8a18](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/c8a18d9adbf6b9b) LisaWedin_Ductus)  
+-  drop redundant prod-profile override, let the base default apply ([292bf](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/292bf52be2dd928) LisaWedin_Ductus)  
+-  give CORS_ORIGINS a default in the prod profile ([79b08](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/79b086428f3d7df) LisaWedin_Ductus)  
+
 ## 2.1.0 (2026-09-09)
 
 ### Features
