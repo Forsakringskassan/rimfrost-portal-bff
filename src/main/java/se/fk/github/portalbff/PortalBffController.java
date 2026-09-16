@@ -96,17 +96,19 @@ public class PortalBffController
    {
       if (mockHandlaggare)
       {
+         // typId matches rimfrost-service-team's hardcoded stub (HandlaggareIdentitet.TYP_ID);
+         // varde values match its INDIVID_A/B/C so these mock handläggare resolve to real teams.
          HandlaggarId id1 = new HandlaggarId();
-         id1.typId = "card";
-         id1.varde = "a1a1a1a1-0000-0000-0000-000000000001";
+         id1.typId = "116759e4-18fd-4209-849c-90abbd257d22";
+         id1.varde = "111111111";
 
          HandlaggarId id2 = new HandlaggarId();
-         id2.typId = "card";
-         id2.varde = "a1a1a1a1-0000-0000-0000-000000000002";
+         id2.typId = "116759e4-18fd-4209-849c-90abbd257d22";
+         id2.varde = "222222222";
 
          HandlaggarId id3 = new HandlaggarId();
-         id3.typId = "card";
-         id3.varde = "a1a1a1a1-0000-0000-0000-000000000003";
+         id3.typId = "116759e4-18fd-4209-849c-90abbd257d22";
+         id3.varde = "333333333";
 
          Handlaggare h1 = new Handlaggare();
          h1.handlaggarId = id1;
