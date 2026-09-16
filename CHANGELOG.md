@@ -2,6 +2,24 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.1.3 (2026-09-16)
+
+### Bug Fixes
+
+-  add CORS_ALLOW_CREDENTIALS support for cookie-based cross-origin auth ([e2a3b](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/e2a3b82f6181490) LisaWedin_Ductus)  
+
+### Other changes
+
+**Add opt-in CORS_ALLOW_CREDENTIALS for cookie-based cross-origin auth**
+
+* Consuming teams may run their own cookie/session auth, which requires 
+* the BFF to respond with Access-Control-Allow-Credentials for 
+* credentialed cross-origin requests to work. Defaults to false so local 
+* dev and existing deployments are unaffected. 
+
+[233be](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/233bebce6107595) LisaWedin_Ductus *2026-09-16 10:55:48*
+
+
 ## 2.1.2 (2026-09-16)
 
 ### Bug Fixes
