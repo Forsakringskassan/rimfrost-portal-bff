@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.1.2 (2026-09-16)
+
+### Bug Fixes
+
+-  align mock handläggare identities with rimfrost-service-team's stub ([84550](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/84550eac8dd3598) LisaWedin_Ductus)  
+
 ## 2.1.1 (2026-09-15)
 
 ### Bug Fixes
