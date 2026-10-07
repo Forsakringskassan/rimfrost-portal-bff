@@ -153,6 +153,216 @@ class PortalBffControllerTest
             .body("borttagna_pga_behorighet", equalTo(3));
    }
 
+   private static final String INDIVID_SEARCH_PATH = "/uppgifter/individ/c5f2e2b4-9143-4160-8f4b-30c172f0ac05/19900101-9999";
+
+   private static void stubIndividSearch(String body)
+   {
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo(INDIVID_SEARCH_PATH))
+            .withQueryParam("assignable", WireMock.equalTo("false"))
+            .willReturn(aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withBody(body)));
+   }
+
+   private static void stubIndividSearchStatus(int status)
+   {
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo(INDIVID_SEARCH_PATH))
+            .willReturn(aResponse().withStatus(status)));
+   }
+
+   @Test
+   void searchTasks_returnsMappedTasks()
+   {
+      stubIndividSearch("""
+            {
+                "operativa_uppgifter": [
+                    {
+                        "uppgift_id": "sok-1",
+                        "handlaggning_id": "handling-1",
+                        "skapad": "2026-10-01",
+                        "status": "Ny",
+                        "planerad_till": null,
+                        "utford": null,
+                        "regel": "REGEL_KOMMUNICERING",
+                        "beskrivning": "Kommunicering",
+                        "verksamhetslogik": "VL",
+                        "roll": "HANDLAGGARE",
+                        "url": "http://example.com/task/sok-1"
+                    }
+                ]
+            }
+            """);
+
+      given()
+            .contentType(ContentType.JSON)
+            .header("Authorization", "Bearer test-token")
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(200)
+            .body("operativa_uppgifter", hasSize(1))
+            .body("operativa_uppgifter[0].uppgiftId", equalTo("sok-1"))
+            .body("operativa_uppgifter[0].status", equalTo("Ny"))
+            .body("operativa_uppgifter[0].planeradTill", equalTo(""))
+            .body("borttagna_pga_behorighet", equalTo(0));
+
+      WireMockTestResource.getServer().verify(
+            getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH))
+                  .withQueryParam("assignable", WireMock.equalTo("false"))
+                  .withHeader("Authorization", WireMock.equalTo("Bearer test-token")));
+   }
+
+   @Test
+   void searchTasks_emptyList_whenOulReturnsNoTasks()
+   {
+      stubIndividSearch("{\"operativa_uppgifter\": []}");
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(200)
+            .body("operativa_uppgifter", empty());
+   }
+
+   @Test
+   void searchTasks_keepsOnlyTasksWithStatusNy()
+   {
+      stubIndividSearch("""
+            {
+                "operativa_uppgifter": [
+                    { "uppgift_id": "ny", "handlaggning_id": "h-1", "skapad": "2026-10-01", "status": "Ny" },
+                    { "uppgift_id": "tilldelad", "handlaggning_id": "h-2", "skapad": "2026-10-01", "status": "Tilldelad",
+                      "handlaggar_id": { "typId": "t", "varde": "111111111" } },
+                    { "uppgift_id": "avslutad", "handlaggning_id": "h-3", "skapad": "2026-10-01", "status": "Avslutad" },
+                    { "uppgift_id": "avbruten", "handlaggning_id": "h-4", "skapad": "2026-10-01", "status": "Avbruten" }
+                ]
+            }
+            """);
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(200)
+            .body("operativa_uppgifter", hasSize(1))
+            .body("operativa_uppgifter[0].uppgiftId", equalTo("ny"));
+   }
+
+   @Test
+   void searchTasks_normalizesPersonnummerWithoutHyphen()
+   {
+      stubIndividSearch("{\"operativa_uppgifter\": []}");
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"199001019999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(200);
+
+      WireMockTestResource.getServer().verify(getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH)));
+   }
+
+   @Test
+   void searchTasks_returns400_withoutCallingOul_whenPersonnummerIsInvalid()
+   {
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(400)
+            .body("error", equalTo("Invalid personnummer"));
+
+      WireMockTestResource.getServer().verify(0, getRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
+   }
+
+   @Test
+   void searchTasks_returns400_withoutCallingOul_whenPersonnummerIsMissing()
+   {
+      given()
+            .contentType(ContentType.JSON)
+            .body("{}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(400);
+
+      WireMockTestResource.getServer().verify(0, getRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
+   }
+
+   @Test
+   void searchTasks_returns400_whenOulRejectsRequest()
+   {
+      stubIndividSearchStatus(400);
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(400)
+            .body("error", equalTo("Upstream error"));
+   }
+
+   @Test
+   void searchTasks_returns403_whenOulDenies()
+   {
+      stubIndividSearchStatus(403);
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(403)
+            .body("error", equalTo("Upstream error"))
+            .body("$", not(hasKey("upstream")));
+   }
+
+   @Test
+   void searchTasks_returns500_whenOulFails()
+   {
+      stubIndividSearchStatus(500);
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(500)
+            .body("error", equalTo("Upstream error"));
+   }
+
+   @Test
+   void searchTasks_returns502_whenOulReturnsOtherClientError()
+   {
+      stubIndividSearchStatus(404);
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(502)
+            .body("error", equalTo("Upstream error"));
+
+      // WireMock answers 404 for unmatched requests too, so check the stub was actually hit.
+      WireMockTestResource.getServer().verify(getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH)));
+   }
+
    @Test
    void reassignTask_returnsMappedTask()
    {

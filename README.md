@@ -30,6 +30,7 @@ To run the full build locally (mirrors CI, skips Docker):
 |---|---|---|
 | `BE_OUL_URL` | `http://localhost:8889` | Base URL for the OUL backend |
 | `PORTAL_REMOTES_CONFIG_PATH` | _(classpath)_ | Path to a `remotes.json` override (e.g. a mounted ConfigMap in Kubernetes). Falls back to the bundled `src/main/resources/remotes.json`. |
+| `PORTAL_PERSONNUMMER_TYP_ID` | `c5f2e2b4-9143-4160-8f4b-30c172f0ac05` | `id_typ` used for personnummer when searching tasks in OUL (`POST /tasks/search`). |
 | `PORTAL_MOCK_HANDLAGGARE` | `true` | Enables the mock `GET /handlaggare` response. Set to `false` in environments where real handläggare data is available. |
 
 ## Packaging and running the application
@@ -96,6 +97,7 @@ If you want to learn more about building native executables, please consult <htt
 | `GET` | `/api/route-manifest` | Returns `remotes.json` — the module federation remote registry. Reads from `PORTAL_REMOTES_CONFIG_PATH` if set, otherwise from the bundled classpath resource. |
 | `GET` | `/handlaggare` | Returns mock handläggare data when `PORTAL_MOCK_HANDLAGGARE=true`, otherwise `503`. |
 | `POST` | `/tasks` | Fetches all operative tasks for a handläggare from OUL and transforms them to the portal model. |
+| `POST` | `/tasks/search` | Searches OUL for tasks belonging to a personnummer (body `{ "personnummer": "..." }`, with or without hyphen) that are not handed out via the queue. Returns only tasks with status `Ny`. |
 | `POST` | `/tasks/getNext` | Assigns the next available task to a handläggare via OUL and returns the transformed result. |
 
 Health: <http://localhost:9001/q/health>

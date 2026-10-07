@@ -47,6 +47,13 @@ public class PortalBffController
    @RestClient
    OulClient oulClient;
 
+   private static final String STATUS_NY = "Ny";
+
+   // id_typ for personnummer in OUL's individ search. Read from config, never hardcoded, since
+   // which value OUL data carries is still open (PBFF-FR-05.7, SOK-Q1).
+   @ConfigProperty(name = "portal.oul.personnummer-typ-id")
+   String personnummerTypId;
+
    @ConfigProperty(name = "portal.mock.handlaggare", defaultValue = "false")
    boolean mockHandlaggare;
 
@@ -206,6 +213,61 @@ public class PortalBffController
       catch (Exception e)
       {
          LOGGER.error("Failed to fetch team tasks", e);
+         return Response.status(500).entity(Map.of("error", "Internal server error")).build();
+      }
+   }
+
+   // POST /tasks/search
+   // Finds tasks for an individ that are not handed out via the queue, so a handläggare can
+   // assign one manually (PBFF-FR-05). The personnummer is in the body to keep it out of URLs
+   // and access logs, and is never logged here — not even OUL's error body, which may echo it.
+   @POST
+   @Path("/tasks/search")
+   public Response searchTasks(SearchTasksRequest body, @HeaderParam("Authorization") String authorization)
+   {
+      Optional<String> personnummer = Personnummer.normalize(body == null ? null : body.personnummer);
+      if (personnummer.isEmpty())
+      {
+         return Response.status(400).entity(Map.of("error", "Invalid personnummer")).build();
+      }
+      try
+      {
+         RawTaskBackendResponse raw = oulClient.searchIndividTasks(personnummerTypId, personnummer.get(), false,
+               authorization);
+         // OUL decides what the handläggare may see (incl. SID); this only narrows the result to
+         // tasks with status Ny, even if OUL returns more (PBFF-FR-05.4).
+         List<OperativUppgift> transformed = raw.operativaUppgifter == null
+               ? List.of()
+               : raw.operativaUppgifter.stream()
+                     .filter(u -> STATUS_NY.equals(u.status))
+                     .map(UppgiftMapper::transform)
+                     .toList();
+
+         TasksResponse result = new TasksResponse();
+         result.operativaUppgifter = transformed;
+         // OUL's individ search has no such signal; kept for the same response shape (PBFF-FR-05.3).
+         result.borttagnaPgaBehorighet = 0;
+         return Response.ok(result).build();
+      }
+      catch (WebApplicationException e)
+      {
+         int upstreamStatus = e.getResponse().getStatus();
+         LOGGER.error("OUL returned {} for individ task search", upstreamStatus);
+         // 400 and 403 are meaningful to the client; any other OUL error is a server-side
+         // problem from its point of view (PBFF-FR-05.5).
+         int status = upstreamStatus == 400 || upstreamStatus == 403 || upstreamStatus >= 500
+               ? upstreamStatus
+               : 502;
+         return Response.status(status).entity(Map.of("error", "Upstream error")).build();
+      }
+      catch (ProcessingException e)
+      {
+         LOGGER.error("Failed to search individ tasks, OUL unreachable", e);
+         return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
+      }
+      catch (Exception e)
+      {
+         LOGGER.error("Failed to search individ tasks", e);
          return Response.status(500).entity(Map.of("error", "Internal server error")).build();
       }
    }
