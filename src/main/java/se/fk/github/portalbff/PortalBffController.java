@@ -49,8 +49,9 @@ public class PortalBffController
 
    private static final String STATUS_NY = "Ny";
 
-   // id_typ for personnummer in OUL's individ search. Read from config, never hardcoded, since
-   // which value OUL data carries is still open (PBFF-FR-05.7, SOK-Q1).
+   // id_typ for personnummer in OUL's individ search. Read from config, never hardcoded: it is an
+   // FK-internal reference data id that may not be known up front, and other identity types may
+   // be added (PBFF-FR-05.7).
    @ConfigProperty(name = "portal.oul.personnummer-typ-id")
    String personnummerTypId;
 

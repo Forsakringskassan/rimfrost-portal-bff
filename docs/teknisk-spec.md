@@ -40,6 +40,9 @@ felbody, som kan innehålla det. BFF:n normaliserar till `ÅÅÅÅMMDD-NNNN` och
 `GET /uppgifter/individ/{id_typ}/{id_varde}?assignable=false`, där `id_typ` kommer från
 `portal.oul.personnummer-typ-id`. Annat format ger 400 utan anrop till OUL.
 
+`id_typ` är ett FK-internt referensdata-id som inte nödvändigtvis är känt i förväg, och fler
+identitetstyper kan tillkomma. Därför är värdet konfigurerbart och inte hårdkodat.
+
 Svaret har samma form som `/tasks`, filtrerat till uppgifter med status `Ny`.
 `borttagna_pga_behorighet` är alltid 0, eftersom OUL:s individsökning saknar fältet;
 SID-filtreringen sker i OUL. Fel från OUL: 400 och 403 vidarebefordras, 5xx vidarebefordras,
@@ -85,3 +88,4 @@ Ingen. Tjänsten har ingen meddelandeintegration.
 | Mockflaggans standardvärde skiljer sig mellan miljökonfiguration och kod | Enhetliggör standardvärdet för `portal.mock.handlaggare` |
 | Felsvar saknar ett gemensamt, typat schema | Inför en enhetlig felresponsmodell |
 | Ingen paginering på `/tasks`, `/tasks/team` eller `/tasks/search` | Bedöm behov när uppgiftsvolymen växer |
+| Personnumret ligger i URL:en i anropet till OUL:s individsökning (`GET`) och kan synas i OUL:s åtkomstloggar | OUL byter till `POST` med personnumret i bodyn (FKPOC-1123); anpassa `OulClient.searchIndividTasks` när kontraktet finns i oul-openapi |
