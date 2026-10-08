@@ -74,8 +74,9 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
   från BFF:n.
 - **PBFF-FR-05.4** Svaret ska bara innehålla uppgifter med status Ny. Detta gäller även om OUL
   returnerar fler.
-- **PBFF-FR-05.5** Fel från OUL ska mappas enligt PBFF-FR-04: 400 till 400, 403 till 403 och
-  övriga fel till 5xx.
+- **PBFF-FR-05.5** Fel från OUL ska mappas med undantag från PBFF-FR-04.1: 400 till 400, 403 till
+  403, 5xx till samma 5xx och övriga statuskoder (t.ex. 404) till 502. Felsvaret ska inte innehålla
+  diagnostisk information från OUL, eftersom den kan innehålla personnumret (PBFF-NFR-02.2).
 - **PBFF-FR-05.6** Personnumret ska normaliseras till formatet `ÅÅÅÅMMDD-NNNN` innan OUL anropas,
   oavsett om klienten skickat det med eller utan bindestreck. Ett personnummer i annat format ska
   ge 400 utan att OUL anropas.

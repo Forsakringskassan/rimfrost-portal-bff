@@ -262,12 +262,14 @@ public class PortalBffController
       }
       catch (ProcessingException e)
       {
-         LOGGER.error("Failed to search individ tasks, OUL unreachable", e);
+         // Only the exception type: the message or stack trace may contain the request URI, which
+         // carries the personnummer as a path segment (PBFF-NFR-02.2).
+         LOGGER.error("Failed to search individ tasks, OUL unreachable: {}", e.getClass().getSimpleName());
          return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
       }
       catch (Exception e)
       {
-         LOGGER.error("Failed to search individ tasks", e);
+         LOGGER.error("Failed to search individ tasks: {}", e.getClass().getSimpleName());
          return Response.status(500).entity(Map.of("error", "Internal server error")).build();
       }
    }
