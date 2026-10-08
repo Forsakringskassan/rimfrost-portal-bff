@@ -21,6 +21,13 @@ public interface OulClient
    RawGetNextBackendResponse assignTask(@HeaderParam("Authorization") String authorization);
 
    @GET
+   @Path("/individ/{id_typ}/{id_varde}")
+   RawTaskBackendResponse searchIndividTasks(@PathParam("id_typ") String idTyp,
+         @PathParam("id_varde") String idVarde,
+         @QueryParam("assignable") boolean assignable,
+         @HeaderParam("Authorization") String authorization);
+
+   @GET
    @Path("/team")
    RawTaskBackendResponse getTeamTasks(@HeaderParam("Authorization") String authorization);
 

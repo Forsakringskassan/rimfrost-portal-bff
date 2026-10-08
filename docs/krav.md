@@ -61,6 +61,28 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 - **PBFF-FR-04.3** Oväntade fel som inte kan hänföras till OUL-integrationen ska resultera i ett
   generellt felsvar utan att exponera intern feldetalj till klienten.
 
+### PBFF-FR-05 — Sök uppgifter för individ
+
+- **PBFF-FR-05.1** BFF:n ska erbjuda en ändpunkt för att söka uppgifter på personnummer.
+  Personnumret ska skickas i anropets body och inte i URL:en, så att det inte hamnar i
+  åtkomstloggar (`POST /tasks/search`, samma mönster som `POST /tasks`). Ändpunkten ska anropa
+  OUL `GET /uppgifter/individ/{id_typ}/{id_varde}` med `assignable=false` och den konfigurerade
+  identitetstypen för personnummer (PBFF-FR-05.7).
+- **PBFF-FR-05.2** Ändpunkten ska skicka vidare handläggarens bearer-token till OUL, på samma
+  sätt som övriga uppgiftsanrop.
+- **PBFF-FR-05.3** Ändpunkten ska svara med uppgifterna i samma form som övriga uppgiftslistor
+  från BFF:n.
+- **PBFF-FR-05.4** Svaret ska bara innehålla uppgifter med status Ny. Detta gäller även om OUL
+  returnerar fler.
+- **PBFF-FR-05.5** Fel från OUL ska mappas med undantag från PBFF-FR-04.1: 400 till 400, 403 till
+  403, 5xx till samma 5xx och övriga statuskoder (t.ex. 404) till 502. Felsvaret ska inte innehålla
+  diagnostisk information från OUL, eftersom den kan innehålla personnumret (PBFF-NFR-02.2).
+- **PBFF-FR-05.6** Personnumret ska normaliseras till formatet `ÅÅÅÅMMDD-NNNN` innan OUL anropas,
+  oavsett om klienten skickat det med eller utan bindestreck. Ett personnummer i annat format ska
+  ge 400 utan att OUL anropas.
+- **PBFF-FR-05.7** Värdet för identitetstypen personnummer (`id_typ` mot OUL) ska läsas från
+  BFF:ens konfiguration och får inte vara hårdkodat.
+
 ---
 
 ## Icke-funktionella krav
@@ -76,6 +98,7 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 
 - **PBFF-NFR-02.1** BFF:n ska vidarebefordra anropande handläggares auktoriseringsuppgifter till
   OUL oförändrade, utan att själv tolka eller lagra dem.
+- **PBFF-NFR-02.2** Personnummer ska inte loggas i klartext i BFF:ens applikationsloggar.
 
 ---
 
