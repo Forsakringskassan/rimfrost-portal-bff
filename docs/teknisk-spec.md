@@ -42,6 +42,8 @@ uppgifter som inte skapats i en processaktivitet eller för processer utan proce
 Portalen laddar processens mikrofrontend via route-manifestet, med nyckeln från sista delen av
 `processvyUrl` (t.ex. `/process/vah` ger `vah`). Den medföljande `remotes.json` har exempel
 för `vah` och `vab`. I klustret styrs registret av `remotesConfig.routes` i `rimfrost-kubernetes`.
+`vab`-posten (`processVabApp`, port 3043) är en platshållare tills `rimfrost-process-vab-fe` finns,
+och ska stämmas av mot den.
 
 ### Sök uppgifter för individ (`/tasks/search`)
 

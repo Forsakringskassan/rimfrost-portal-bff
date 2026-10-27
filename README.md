@@ -96,8 +96,10 @@ If you want to learn more about building native executables, please consult <htt
 |---|---|---|
 | `GET` | `/api/route-manifest` | Returns `remotes.json` — the module federation remote registry. Reads from `PORTAL_REMOTES_CONFIG_PATH` if set, otherwise from the bundled classpath resource. Holds both regel micro frontends and process micro frontends (keys `vah`, `vab`, matching the last segment of a task's `processvyUrl`). |
 | `GET` | `/handlaggare` | Returns mock handläggare data when `PORTAL_MOCK_HANDLAGGARE=true`, otherwise `503`. |
-| `POST` | `/tasks` | Fetches all operative tasks for a handläggare from OUL and transforms them to the portal model. Each task carries the optional `aktivitetId` and `processvyUrl` when OUL has them. |
+| `POST` | `/tasks` | Fetches all operative tasks for a handläggare from OUL and transforms them to the portal model. |
 | `POST` | `/tasks/search` | Searches OUL for tasks belonging to a personnummer (body `{ "personnummer": "..." }`, with or without hyphen) that are not handed out via the queue. Returns only tasks with status `Ny`. |
 | `POST` | `/tasks/getNext` | Assigns the next available task to a handläggare via OUL and returns the transformed result. |
+
+All task responses carry the optional `aktivitetId` and `processvyUrl` when OUL has them; the fields are left out otherwise.
 
 Health: <http://localhost:9001/q/health>

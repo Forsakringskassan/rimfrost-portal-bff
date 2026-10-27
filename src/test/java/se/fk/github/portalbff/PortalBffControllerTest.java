@@ -67,6 +67,7 @@ class PortalBffControllerTest
             .body("borttagna_pga_behorighet", equalTo(2));
    }
 
+   // PBFF-FR-06.1: aktivitetId and processvyUrl are forwarded when OUL has them, and left out otherwise.
    @Test
    void getTasks_forwardsAktivitetIdAndProcessvyUrl_onlyWhenPresent()
    {
@@ -568,6 +569,7 @@ class PortalBffControllerTest
             .statusCode(400);
    }
 
+   // PBFF-FR-06.2: the route manifest holds process micro frontends keyed by the last segment of processvyUrl.
    @Test
    void getRouteManifest_containsProcessvyRoutes()
    {
