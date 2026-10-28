@@ -2,6 +2,27 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.2.0 (2026-10-27)
+
+### Features
+
+-  add POST /tasks/search for personnummer task search (FKPOC-1131) ([082a8](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/082a84820c02bf3) LisaWedin_Ductus)  
+
+### Bug Fixes
+
+-  remove old maven-ci and maven-release workflows ([4a7d6](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/4a7d6a9a6459fd4) Ulf Slunga)  
+-  add reusable bundle-maven-lib CI and release workflows ([0db2f](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/0db2f09dde57b20) Ulf Slunga)  
+-  keep personnummer out of search error logs, align FR-05.5 wording (FKPOC-1131) ([e55fd](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/e55fd50fba3e6cb) LisaWedin_Ductus)  
+
+### Dependency updates
+
+- update forsakringskassan/.github digest to cbd74f1 ([9f4fa](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/9f4fac9813a411a) renovate[bot])  
+- update forsakringskassan/.github digest to bfb01f7 ([da8b7](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/da8b735cb22b8bd) renovate[bot])  
+### Other changes
+
+
+## rimfrost-1_2 (2026-09-16)
+
 ## 2.1.3 (2026-09-16)
 
 ### Bug Fixes
