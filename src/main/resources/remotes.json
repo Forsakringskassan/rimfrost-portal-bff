@@ -12,6 +12,18 @@
       "devEntry": "http://localhost:3033/mf-manifest.json",
       "prodEntry": "https://cdn.example.com/bekraftabeslut/mf-manifest.json"
     },
+    "vah": {
+      "scope": "processVahApp",
+      "module": "ProcessVy",
+      "devEntry": "http://localhost:3041/mf-manifest.json",
+      "prodEntry": "https://cdn.example.com/process-vah/mf-manifest.json"
+    },
+    "vab": {
+      "scope": "processVabApp",
+      "module": "ProcessVy",
+      "devEntry": "http://localhost:3043/mf-manifest.json",
+      "prodEntry": "https://cdn.example.com/process-vab/mf-manifest.json"
+    },
     "remoteExample": {
       "scope": "remoteExample",
       "module": "ExampleComponent",

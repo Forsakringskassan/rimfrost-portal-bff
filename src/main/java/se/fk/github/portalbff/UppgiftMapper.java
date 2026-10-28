@@ -22,6 +22,8 @@ public class UppgiftMapper
       result.verksamhetslogik = raw.verksamhetslogik;
       result.roll = raw.roll;
       result.url = raw.url;
+      result.aktivitetId = raw.aktivitetId;
+      result.processvyUrl = raw.processvyUrl;
       return result;
    }
 }

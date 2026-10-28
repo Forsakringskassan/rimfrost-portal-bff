@@ -67,6 +67,49 @@ class PortalBffControllerTest
             .body("borttagna_pga_behorighet", equalTo(2));
    }
 
+   // PBFF-FR-06.1: aktivitetId and processvyUrl are forwarded when OUL has them, and left out otherwise.
+   @Test
+   void getTasks_forwardsAktivitetIdAndProcessvyUrl_onlyWhenPresent()
+   {
+      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/handlaggare"))
+            .willReturn(aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withBody("""
+                        {
+                            "operativa_uppgifter": [
+                                {
+                                    "uppgift_id": "med-processvy",
+                                    "handlaggning_id": "handling-1",
+                                    "status": "AKTIV",
+                                    "url": "http://example.com/regel/rtf-manuell",
+                                    "aktivitet_id": "3f1c2a9e-7b4d-4c6e-9a1f-2b3c4d5e6f70",
+                                    "processvy_url": "/process/vah"
+                                },
+                                {
+                                    "uppgift_id": "utan-processvy",
+                                    "handlaggning_id": "handling-2",
+                                    "status": "AKTIV",
+                                    "url": "http://example.com/regel/rtf-manuell"
+                                }
+                            ],
+                            "borttagna_pga_behorighet": 0
+                        }
+                        """)));
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"typId\": \"type-1\"}")
+            .when()
+            .post("/tasks")
+            .then()
+            .statusCode(200)
+            .body("operativa_uppgifter", hasSize(2))
+            .body("operativa_uppgifter[0].aktivitetId", equalTo("3f1c2a9e-7b4d-4c6e-9a1f-2b3c4d5e6f70"))
+            .body("operativa_uppgifter[0].processvyUrl", equalTo("/process/vah"))
+            .body("operativa_uppgifter[1]", not(hasKey("aktivitetId")))
+            .body("operativa_uppgifter[1]", not(hasKey("processvyUrl")));
+   }
+
    @Test
    void getTasks_emptyList_whenOulReturnsNoTasks()
    {
@@ -524,5 +567,20 @@ class PortalBffControllerTest
             .post("/tasks/getNext")
             .then()
             .statusCode(400);
+   }
+
+   // PBFF-FR-06.2: the route manifest holds process micro frontends keyed by the last segment of processvyUrl.
+   @Test
+   void getRouteManifest_containsProcessvyRoutes()
+   {
+      given()
+            .when()
+            .get("/api/route-manifest")
+            .then()
+            .statusCode(200)
+            .body("routes", hasKey("vah"))
+            .body("routes", hasKey("vab"))
+            .body("routes.vah.scope", equalTo("processVahApp"))
+            .body("routes.vah.module", equalTo("ProcessVy"));
    }
 }
