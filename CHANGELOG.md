@@ -2,6 +2,12 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.2.1 (2026-10-29)
+
+### Bug Fixes
+
+-  Replace github workflows ([df5a9](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/df5a9a0e9e42642) Lars Persson)  
+
 ## 2.2.0 (2026-10-27)
 
 ### Features
