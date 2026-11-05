@@ -83,6 +83,15 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 - **PBFF-FR-05.7** Värdet för identitetstypen personnummer (`id_typ` mot OUL) ska läsas från
   BFF:ens konfiguration och får inte vara hårdkodat.
 
+### PBFF-FR-06 — Processvy för uppgiften
+
+- **PBFF-FR-06.1** BFF:n ska läsa uppgiftens `aktivitet_id` och `processvy_url` från OUL och
+  skicka dem vidare till portalen som `aktivitetId` och `processvyUrl`, när de finns. En uppgift
+  som saknar dem ska skickas utan fälten.
+- **PBFF-FR-06.2** Registret över mikrofrontends (PBFF-FR-01) ska kunna innehålla processers
+  mikrofrontends på samma sätt som regel-mikrofrontends, med nyckeln från sista delen av
+  `processvy_url` (t.ex. `vah` och `vab`).
+
 ---
 
 ## Icke-funktionella krav

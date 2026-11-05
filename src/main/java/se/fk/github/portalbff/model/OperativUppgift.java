@@ -1,5 +1,6 @@
 package se.fk.github.portalbff.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 
 public class OperativUppgift
@@ -17,4 +18,9 @@ public class OperativUppgift
    public String verksamhetslogik;
    public String roll;
    public String url;
+   // Optional: absent for tasks not created in a process activity or for processes without a processvy
+   @JsonInclude(JsonInclude.Include.NON_NULL)
+   public String aktivitetId;
+   @JsonInclude(JsonInclude.Include.NON_NULL)
+   public String processvyUrl;
 }

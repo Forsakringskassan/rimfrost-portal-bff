@@ -28,6 +28,8 @@ class UppgiftMapperTest
       raw.verksamhetslogik = "vl-1";
       raw.roll = "roll-1";
       raw.url = "http://example.com";
+      raw.aktivitetId = "3f1c2a9e-7b4d-4c6e-9a1f-2b3c4d5e6f70";
+      raw.processvyUrl = "/process/vah";
       return raw;
    }
 
@@ -51,6 +53,21 @@ class UppgiftMapperTest
       assertEquals(raw.verksamhetslogik, result.verksamhetslogik);
       assertEquals(raw.roll, result.roll);
       assertEquals(raw.url, result.url);
+      assertEquals(raw.aktivitetId, result.aktivitetId);
+      assertEquals(raw.processvyUrl, result.processvyUrl);
+   }
+
+   @Test
+   void transform_missingAktivitetIdAndProcessvyUrl_staysNull()
+   {
+      RawOperativUppgift raw = fullRaw();
+      raw.aktivitetId = null;
+      raw.processvyUrl = null;
+
+      OperativUppgift result = UppgiftMapper.transform(raw);
+
+      assertNull(result.aktivitetId);
+      assertNull(result.processvyUrl);
    }
 
    @Test

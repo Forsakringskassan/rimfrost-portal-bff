@@ -31,4 +31,8 @@ public class RawOperativUppgift
    public String roll;
    @JsonProperty("url")
    public String url;
+   @JsonProperty("aktivitet_id")
+   public String aktivitetId;
+   @JsonProperty("processvy_url")
+   public String processvyUrl;
 }
