@@ -2,6 +2,22 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.3.0 (2026-11-07)
+
+### Features
+
+-  forward aktivitetId and processvyUrl and add process routes to manifest (FKPOC-1174) ([3c154](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/3c154cda10ad5e6) LisaWedin_Ductus)  
+
+### Bug Fixes
+
+-  address review comments (FKPOC-1174) ([6e941](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/6e941c1d2309638) LisaWedin_Ductus)  
+
+### Dependency updates
+
+- update forsakringskassan/.github digest to cbc0db8 ([2915d](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/2915d7593b79885) renovate[bot])  
+### Other changes
+
+
 ## 2.2.1 (2026-10-29)
 
 ### Bug Fixes
