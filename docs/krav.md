@@ -66,8 +66,9 @@ Portal BFF är backend-för-frontend för handläggarportalen. Den ger portalens
 - **PBFF-FR-05.1** BFF:n ska erbjuda en ändpunkt för att söka uppgifter på personnummer.
   Personnumret ska skickas i anropets body och inte i URL:en, så att det inte hamnar i
   åtkomstloggar (`POST /tasks/search`, samma mönster som `POST /tasks`). Ändpunkten ska anropa
-  OUL `GET /uppgifter/individ/{id_typ}/{id_varde}` med `assignable=false` och den konfigurerade
-  identitetstypen för personnummer (PBFF-FR-05.7).
+  OUL `POST /uppgifter/individ/unassignable` med `id_typ` (den konfigurerade identitetstypen för
+  personnummer, PBFF-FR-05.7), `id_varde` (personnumret) och `statuses: ["Ny"]` i bodyn, så att
+  personnumret inte heller hamnar i URL:en mot OUL.
 - **PBFF-FR-05.2** Ändpunkten ska skicka vidare handläggarens bearer-token till OUL, på samma
   sätt som övriga uppgiftsanrop.
 - **PBFF-FR-05.3** Ändpunkten ska svara med uppgifterna i samma form som övriga uppgiftslistor
