@@ -196,12 +196,20 @@ class PortalBffControllerTest
             .body("borttagna_pga_behorighet", equalTo(3));
    }
 
-   private static final String INDIVID_SEARCH_PATH = "/uppgifter/individ/c5f2e2b4-9143-4160-8f4b-30c172f0ac05/19900101-9999";
+   private static final String INDIVID_SEARCH_PATH = "/uppgifter/individ/unassignable";
+
+   private static final String INDIVID_SEARCH_BODY = """
+         {
+             "id_typ": "c5f2e2b4-9143-4160-8f4b-30c172f0ac05",
+             "id_varde": "19900101-9999",
+             "statuses": ["Ny"]
+         }
+         """;
 
    private static void stubIndividSearch(String body)
    {
-      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo(INDIVID_SEARCH_PATH))
-            .withQueryParam("assignable", WireMock.equalTo("false"))
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo(INDIVID_SEARCH_PATH))
+            .withRequestBody(equalToJson(INDIVID_SEARCH_BODY))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
                   .withBody(body)));
@@ -209,7 +217,7 @@ class PortalBffControllerTest
 
    private static void stubIndividSearchStatus(int status)
    {
-      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo(INDIVID_SEARCH_PATH))
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo(INDIVID_SEARCH_PATH))
             .willReturn(aResponse().withStatus(status)));
    }
 
@@ -230,7 +238,8 @@ class PortalBffControllerTest
                         "beskrivning": "Kommunicering",
                         "verksamhetslogik": "VL",
                         "roll": "HANDLAGGARE",
-                        "url": "http://example.com/task/sok-1"
+                        "url": "http://example.com/task/sok-1",
+                        "yrkande_roll": "HUVUDMAN"
                     }
                 ]
             }
@@ -248,12 +257,35 @@ class PortalBffControllerTest
             .body("operativa_uppgifter[0].uppgiftId", equalTo("sok-1"))
             .body("operativa_uppgifter[0].status", equalTo("Ny"))
             .body("operativa_uppgifter[0].planeradTill", equalTo(""))
+            // OUL's yrkande_roll is not part of the portal's response shape (PBFF-FR-05.3).
+            .body("operativa_uppgifter[0]", not(hasKey("yrkandeRoll")))
+            .body("operativa_uppgifter[0]", not(hasKey("yrkande_roll")))
             .body("borttagna_pga_behorighet", equalTo(0));
 
+      // urlEqualTo (not urlPathEqualTo) so the call fails if any query parameter is added.
       WireMockTestResource.getServer().verify(
-            getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH))
-                  .withQueryParam("assignable", WireMock.equalTo("false"))
+            postRequestedFor(urlEqualTo(INDIVID_SEARCH_PATH))
+                  .withRequestBody(equalToJson(INDIVID_SEARCH_BODY))
                   .withHeader("Authorization", WireMock.equalTo("Bearer test-token")));
+   }
+
+   @Test
+   void searchTasks_doesNotUseRemovedGetEndpoint()
+   {
+      // OUL removed GET /uppgifter/individ/{id_typ}/{id_varde} in oul-openapi 2.4.1 (FKPOC-1472).
+      stubIndividSearch("{\"operativa_uppgifter\": []}");
+
+      given()
+            .contentType(ContentType.JSON)
+            .body("{\"personnummer\": \"19900101-9999\"}")
+            .when()
+            .post("/tasks/search")
+            .then()
+            .statusCode(200);
+
+      WireMockTestResource.getServer().verify(0, getRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
+      WireMockTestResource.getServer().verify(0, anyRequestedFor(urlMatching(".*19900101-9999.*")));
+      WireMockTestResource.getServer().verify(0, anyRequestedFor(urlMatching(".*assignable=.*")));
    }
 
    @Test
@@ -310,7 +342,8 @@ class PortalBffControllerTest
             .then()
             .statusCode(200);
 
-      WireMockTestResource.getServer().verify(getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH)));
+      WireMockTestResource.getServer().verify(postRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH))
+            .withRequestBody(matchingJsonPath("$.id_varde", WireMock.equalTo("19900101-9999"))));
    }
 
    @Test
@@ -325,7 +358,7 @@ class PortalBffControllerTest
             .statusCode(400)
             .body("error", equalTo("Invalid personnummer"));
 
-      WireMockTestResource.getServer().verify(0, getRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
+      WireMockTestResource.getServer().verify(0, anyRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
    }
 
    @Test
@@ -339,7 +372,7 @@ class PortalBffControllerTest
             .then()
             .statusCode(400);
 
-      WireMockTestResource.getServer().verify(0, getRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
+      WireMockTestResource.getServer().verify(0, anyRequestedFor(urlPathMatching("/uppgifter/individ/.*")));
    }
 
    @Test
@@ -403,7 +436,7 @@ class PortalBffControllerTest
             .body("error", equalTo("Upstream error"));
 
       // WireMock answers 404 for unmatched requests too, so check the stub was actually hit.
-      WireMockTestResource.getServer().verify(getRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH)));
+      WireMockTestResource.getServer().verify(postRequestedFor(urlPathEqualTo(INDIVID_SEARCH_PATH)));
    }
 
    @Test

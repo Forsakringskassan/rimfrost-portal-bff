@@ -38,7 +38,7 @@ class SearchTasksTypIdConfigTest
    @Test
    void searchTasks_usesConfiguredTypId()
    {
-      WireMockTestResource.getServer().stubFor(get(urlPathEqualTo("/uppgifter/individ/personnummer/19900101-9999"))
+      WireMockTestResource.getServer().stubFor(post(urlPathEqualTo("/uppgifter/individ/unassignable"))
             .willReturn(aResponse()
                   .withHeader("Content-Type", "application/json")
                   .withBody("{\"operativa_uppgifter\": []}")));
@@ -52,6 +52,7 @@ class SearchTasksTypIdConfigTest
             .statusCode(200);
 
       WireMockTestResource.getServer().verify(
-            getRequestedFor(urlPathEqualTo("/uppgifter/individ/personnummer/19900101-9999")));
+            postRequestedFor(urlPathEqualTo("/uppgifter/individ/unassignable"))
+                  .withRequestBody(matchingJsonPath("$.id_typ", equalTo("personnummer"))));
    }
 }
