@@ -257,8 +257,12 @@ class PortalBffControllerTest
             .body("operativa_uppgifter[0].uppgiftId", equalTo("sok-1"))
             .body("operativa_uppgifter[0].status", equalTo("Ny"))
             .body("operativa_uppgifter[0].planeradTill", equalTo(""))
+            // OUL's yrkande_roll is not part of the portal's response shape (PBFF-FR-05.3).
+            .body("operativa_uppgifter[0]", not(hasKey("yrkandeRoll")))
+            .body("operativa_uppgifter[0]", not(hasKey("yrkande_roll")))
             .body("borttagna_pga_behorighet", equalTo(0));
 
+      // urlEqualTo (not urlPathEqualTo) so the call fails if any query parameter is added.
       WireMockTestResource.getServer().verify(
             postRequestedFor(urlEqualTo(INDIVID_SEARCH_PATH))
                   .withRequestBody(equalToJson(INDIVID_SEARCH_BODY))
