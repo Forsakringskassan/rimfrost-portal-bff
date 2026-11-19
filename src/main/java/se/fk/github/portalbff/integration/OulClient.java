@@ -3,6 +3,7 @@ package se.fk.github.portalbff.integration;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import se.fk.github.portalbff.model.IndividSearchBackendRequest;
 import se.fk.github.portalbff.model.RawTaskBackendResponse;
 import se.fk.github.portalbff.model.RawGetNextBackendResponse;
 
@@ -20,11 +21,9 @@ public interface OulClient
    @Path("/handlaggare")
    RawGetNextBackendResponse assignTask(@HeaderParam("Authorization") String authorization);
 
-   @GET
-   @Path("/individ/{id_typ}/{id_varde}")
-   RawTaskBackendResponse searchIndividTasks(@PathParam("id_typ") String idTyp,
-         @PathParam("id_varde") String idVarde,
-         @QueryParam("assignable") boolean assignable,
+   @POST
+   @Path("/individ/unassignable")
+   RawTaskBackendResponse searchIndividTasks(IndividSearchBackendRequest request,
          @HeaderParam("Authorization") String authorization);
 
    @GET

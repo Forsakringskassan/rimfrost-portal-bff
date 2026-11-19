@@ -233,10 +233,12 @@ public class PortalBffController
       }
       try
       {
-         RawTaskBackendResponse raw = oulClient.searchIndividTasks(personnummerTypId, personnummer.get(), false,
+         RawTaskBackendResponse raw = oulClient.searchIndividTasks(
+               new IndividSearchBackendRequest(personnummerTypId, personnummer.get(), List.of(STATUS_NY)),
                authorization);
-         // OUL decides what the handläggare may see (incl. SID); this only narrows the result to
-         // tasks with status Ny, even if OUL returns more (PBFF-FR-05.4).
+         // OUL decides what the handläggare may see (incl. SID) and filters on status Ny. The filter
+         // below is kept as a safeguard, so only Ny tasks are returned even if OUL returns more
+         // (PBFF-FR-05.4).
          List<OperativUppgift> transformed = raw.operativaUppgifter == null
                ? List.of()
                : raw.operativaUppgifter.stream()
@@ -263,8 +265,8 @@ public class PortalBffController
       }
       catch (ProcessingException e)
       {
-         // Only the exception type: the message or stack trace may contain the request URI, which
-         // carries the personnummer as a path segment (PBFF-NFR-02.2).
+         // Only the exception type: the message or stack trace may contain request details, and
+         // the personnummer must never be logged (PBFF-NFR-02.2).
          LOGGER.error("Failed to search individ tasks, OUL unreachable: {}", e.getClass().getSimpleName());
          return Response.status(502).entity(Map.of("error", "Upstream unavailable")).build();
       }
