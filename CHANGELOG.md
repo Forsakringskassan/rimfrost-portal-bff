@@ -2,6 +2,18 @@
 
 Changelog of rimfrost-portal-bff.
 
+## 2.3.1 (2026-11-19)
+
+### Bug Fixes
+
+-  address review comments (FKPOC-1472) ([bfb63](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/bfb635651d58afd) LisaWedin_Ductus)  
+-  search individ tasks via OUL POST /uppgifter/individ/unassignable (FKPOC-1472) ([9cd5a](https://github.com/Forsakringskassan/rimfrost-portal-bff/commit/9cd5a943fc51486) LisaWedin_Ductus)  
+
+### Other changes
+
+
+## rimfrost-1_3 (2026-11-13)
+
 ## 2.3.0 (2026-11-07)
 
 ### Features
